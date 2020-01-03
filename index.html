@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Use correct character set. -->
+    <meta charset="utf-8" />
+    <!-- Tell IE to use the latest, best version. -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no"
+    />
+    <title>RISK</title>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="CesiumViewer.css" media="screen" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="//fonts.googleapis.com/css?family=MedievalSharp"
+    />
+  </head>
+
+  <body>
+    <div class="fullWindow">
+      <div id="gameOuterContainer">
+        <div id="cesiumContainer">
+          <div id="round"></div>
+          <div id="gameDetailsToggle"></div>
+          <div id="continents"></div>
+          <div id="gameLogToggle">GLT</div>
+          <div id="gameDetails">
+            <div id="playersContainer">
+              <div>Players</div>
+            </div>
+          </div>
+          <div id="gameInstructions">
+            <div id="playersTurn"></div>
+            <div>
+              <span id="currentPhase"></span>
+            </div>
+            <div>
+              <button id="nextPhase">Next Phase</button>
+              <button style="display:none;" id="turnOver">End Turn</button>
+            </div>
+          </div>
+          <div id="playerCards"></div>
+          <div id="viewCards"></div>
+          <div id="fastForward">
+            <span id="ff1">></span><span id="ff2">></span>
+          </div>
+        </div>
+        <div id="startGame">
+          <div>
+            Humans:
+            <input
+              id="humans"
+              type="number"
+              min="0"
+              max="10"
+              value="1"
+              style="width:50px;"
+            />
+          </div>
+          <div>
+            Robots:
+            <input
+              id="robots"
+              type="number"
+              min="0"
+              max="10"
+              value="4"
+              style="width:50px;"
+            />
+          </div>
+          <div>
+            <button id="startGameButton">
+              Start Game
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="loadingIndicator" class="loadingIndicator"></div>
+    <div id="battleContainer"></div>
+    <div id="moveTroopsContainer"></div>
+    <div id="attackButtons"></div>
+    <div id="alertBox"></div>
+    <div id="gameLog"></div>
+    <script type="text/javascript" src="data/countryData.json"></script>
+    <script type="text/javascript" src="data/canAttack.json"></script>
+    <script type="text/javascript" src="data/continents.json"></script>
+    <script src="CesiumViewer.js" type="module"></script>
+  </body>
+</html>

@@ -1,0 +1,696 @@
+(countriesCanAttack = [{
+    "id": "USA",
+    "canAttack": ["CAN", "MEX", "CUB", "RUS", "BHS"]
+  },
+  {
+    "id": "BHS",
+    "canAttack": ["USA", "CUB"]
+  },
+  {
+    "id": "MEX",
+    "canAttack": ["USA", "GTM", "CUB", "BLZ"]
+  },
+  {
+    "id": "BLZ",
+    "canAttack": ["MEX", "GTM"]
+  },
+  {
+    "id": "GTM",
+    "canAttack": ["MEX", "HND", "SLV", "BLZ"]
+  },
+  {
+    "id": "HND",
+    "canAttack": ["GTM", "NIC", "SLV"]
+  },
+  {
+    "id": "SLV",
+    "canAttack": ["HND", "GTM"]
+  },
+  {
+    "id": "NIC",
+    "canAttack": ["HND", "CRI"]
+  },
+  {
+    "id": "CRI",
+    "canAttack": ["NIC", "PAN"]
+  },
+  {
+    "id": "PAN",
+    "canAttack": ["CRI", "COL"]
+  },
+  {
+    "id": "COL",
+    "canAttack": ["ECU", "PER", "BRA", "VEN", "DOM", "PAN"]
+  },
+  {
+    "id": "ECU",
+    "canAttack": ["PER", "COL"]
+  },
+  {
+    "id": "PER",
+    "canAttack": ["ECU", "COL", "BRA", "BOL", "CHL"]
+  },
+  {
+    "id": "BOL",
+    "canAttack": ["PER", "BRA", "PRY", "ARG", "CHL"]
+  },
+  {
+    "id": "CHL",
+    "canAttack": ["PER", "BOL", "ARG", "ATA"]
+  },
+  {
+    "id": "ARG",
+    "canAttack": ["URY", "BRA", "PRY", "BOL", "CHL", "ATA"]
+  },
+  {
+    "id": "ATA",
+    "canAttack": ["ARG", "CHL", "NZL", "AUS"]
+  },
+  {
+    "id": "URY",
+    "canAttack": ["BRA", "ARG"]
+  },
+  {
+    "id": "PRY",
+    "canAttack": ["BOL", "ARG", "BRA"]
+  },
+  {
+    "id": "BRA",
+    "canAttack": [
+      "URY",
+      "ARG",
+      "PRY",
+      "BOL",
+      "PER",
+      "COL",
+      "VEN",
+      "GUY",
+      "SUR",
+      "GUF",
+      "LBR",
+      "SLE",
+      "GIN",
+      "GNB",
+      "SEN",
+      "MRT"
+    ]
+  },
+  {
+    "id": "GUF",
+    "canAttack": ["BRA", "SUR"]
+  },
+  {
+    "id": "SUR",
+    "canAttack": ["GUY", "GUF", "BRA"]
+  },
+  {
+    "id": "GUY",
+    "canAttack": ["VEN", "BRA", "SUR"]
+  },
+  {
+    "id": "VEN",
+    "canAttack": ["DOM", "COL", "BRA", "GUY"]
+  },
+  {
+    "id": "DOM",
+    "canAttack": ["HTI", "VEN", "COL"]
+  },
+  {
+    "id": "HTI",
+    "canAttack": ["DOM", "COL", "CUB"]
+  },
+  {
+    "id": "CUB",
+    "canAttack": ["MEX", "USA", "HTI", "BHS"]
+  },
+  {
+    "id": "CAN",
+    "canAttack": ["USA", "GRL"]
+  },
+  {
+    "id": "GRL",
+    "canAttack": ["ISL", "CAN"]
+  },
+  {
+    "id": "ISL",
+    "canAttack": ["GRL", "NOR", "GBR"]
+  },
+  {
+    "id": "GBR",
+    "canAttack": ["ISL", "NOR", "IRL", "FRA", "BEL", "NLD"]
+  },
+  {
+    "id": "NOR",
+    "canAttack": ["ISL", "SWE", "FIN", "RUS", "DNK", "GBR"]
+  },
+  {
+    "id": "SWE",
+    "canAttack": ["NOR", "FIN", "DNK", "EST", "LVA", "DEU", "POL", "LTU"]
+  },
+  {
+    "id": "FIN",
+    "canAttack": ["NOR", "SWE", "RUS", "EST"]
+  },
+  {
+    "id": "EST",
+    "canAttack": ["SWE", "FIN", "RUS", "LVA"]
+  },
+  {
+    "id": "LVA",
+    "canAttack": ["EST", "SWE", "RUS", "LTU", "BLR"]
+  },
+  {
+    "id": "LTU",
+    "canAttack": ["LVA", "BLR", "SWE", "POL"]
+  },
+  {
+    "id": "POL",
+    "canAttack": ["SWE", "LTU", "BLR", "UKR", "SVK", "CZE", "DEU"]
+  },
+  {
+    "id": "DEU",
+    "canAttack": ["DNK", "NLD", "BEL", "FRA", "CHE", "AUT", "CZE", "POL", "SWE"]
+  },
+  {
+    "id": "DNK",
+    "canAttack": ["SWE", "NOR", "DEU"]
+  },
+  {
+    "id": "NLD",
+    "canAttack": ["GBR", "DEU", "BEL"]
+  },
+  {
+    "id": "BEL",
+    "canAttack": ["GBR", "FRA", "NLD", "DEU"]
+  },
+  {
+    "id": "IRL",
+    "canAttack": ["GBR"]
+  },
+  {
+    "id": "FRA",
+    "canAttack": ["GBR", "BEL", "DEU", "CHE", "ITA", "ESP"]
+  },
+  {
+    "id": "ESP",
+    "canAttack": ["FRA", "PRT", "MAR", "DZA"]
+  },
+  {
+    "id": "PRT",
+    "canAttack": ["ESP"]
+  },
+  {
+    "id": "ITA",
+    "canAttack": ["ALB", "AUT", "BIH", "CHE", "FRA", "GRC", "HRV", "TUN", "SVN"]
+  },
+  {
+    "id": "CHE",
+    "canAttack": ["DEU", "FRA", "ITA", "AUT"]
+  },
+  {
+    "id": "AUT",
+    "canAttack": ["CHE", "CZE", "DEU", "HUN", "HRV", "ITA", "SVK", "SVN"]
+  },
+  {
+    "id": "CZE",
+    "canAttack": ["POL", "DEU", "AUT", "SVK"]
+  },
+  {
+    "id": "SVK",
+    "canAttack": ["UKR", "POL", "CZE", "AUT", "HUN"]
+  },
+  {
+    "id": "HUN",
+    "canAttack": ["AUT", "HRV", "ROU", "SRB", "SVK", "UKR", "SVN"]
+  },
+  {
+    "id": "HRV",
+    "canAttack": ["AUT", "BIH", "HUN", "ITA", "MNE", "SRB", "SVN"]
+  },
+  {
+    "id": "BIH",
+    "canAttack": ["ALB", "HRV", "ITA", "SRB", "MNE"]
+  },
+  {
+    "id": "SRB",
+    "canAttack": ["ALB", "BGR", "BIH", "GRC", "HUN", "HRV", "ROU", "MNE", "MKD"]
+  },
+  {
+    "id": "ALB",
+    "canAttack": ["BGR", "BIH", "GRC", "ITA", "SRB", "MNE", "MKD", "HRV"]
+  },
+  {
+    "id": "GRC",
+    "canAttack": ["ALB", "BGR", "EGY", "ITA", "LBY", "TUR", "MKD"]
+  },
+  {
+    "id": "SVN",
+    "canAttack": ["ITA", "AUT", "HUN", "HRV"]
+  },
+  {
+    "id": "BGR",
+    "canAttack": ["ALB", "GRC", "ROU", "SRB", "TUR", "MKD"]
+  },
+  {
+    "id": "ROU",
+    "canAttack": ["BGR", "SRB", "HUN", "UKR", "MDA"]
+  },
+  {
+    "id": "MDA",
+    "canAttack": ["ROU", "UKR"]
+  },
+  {
+    "id": "UKR",
+    "canAttack": ["ROU", "MDA", "HUN", "SVK", "POL", "BLR", "RUS"]
+  },
+  {
+    "id": "BLR",
+    "canAttack": ["UKR", "POL", "LTU", "LVA", "RUS"]
+  },
+  {
+    "id": "TUR",
+    "canAttack": ["BGR", "GRC", "GEO", "ARM", "AZE", "IRN", "IRQ", "SYR"]
+  },
+  {
+    "id": "SYR",
+    "canAttack": ["IRQ", "JOR", "TUR", "ISR"]
+  },
+  {
+    "id": "JOR",
+    "canAttack": ["EGY", "IRQ", "SAU", "SYR", "ISR"]
+  },
+  {
+    "id": "SAU",
+    "canAttack": ["JOR", "EGY", "IRQ", "ARE", "OMN", "YEM", "KWT"]
+  },
+  {
+    "id": "IRQ",
+    "canAttack": ["IRN", "TUR", "SYR", "JOR", "SAU", "KWT"]
+  },
+  {
+    "id": "ARE",
+    "canAttack": ["OMN", "SAU", "IRN"]
+  },
+  {
+    "id": "OMN",
+    "canAttack": ["ARE", "SAU", "YEM"]
+  },
+  {
+    "id": "YEM",
+    "canAttack": ["OMN", "SAU", "ERI", "SOM", "DJI"]
+  },
+  {
+    "id": "IRN",
+    "canAttack": ["PAK", "AFG", "TKM", "AZE", "ARM", "TUR", "IRQ", "ARE"]
+  },
+  {
+    "id": "ARM",
+    "canAttack": ["IRN", "TUR", "GEO", "AZE"]
+  },
+  {
+    "id": "AZE",
+    "canAttack": ["IRN", "ARM", "GEO", "RUS"]
+  },
+  {
+    "id": "GEO",
+    "canAttack": ["TUR", "ARM", "AZE", "RUS"]
+  },
+  {
+    "id": "RUS",
+    "canAttack": [
+      "AZE",
+      "GEO",
+      "UKR",
+      "BLR",
+      "LVA",
+      "EST",
+      "FIN",
+      "NOR",
+      "CHN",
+      "PRK",
+      "MNG",
+      "KAZ",
+      "USA", "JPN"
+    ]
+  },
+  {
+    "id": "KAZ",
+    "canAttack": ["RUS", "TKM", "UZB", "KGZ", "CHN"]
+  },
+  {
+    "id": "UZB",
+    "canAttack": ["KAZ", "TKM", "AFG", "TJK", "KGZ"]
+  },
+  {
+    "id": "TKM",
+    "canAttack": ["IRN", "AFG", "UZB", "KAZ"]
+  },
+  {
+    "id": "AFG",
+    "canAttack": ["PAK", "IRN", "TKM", "UZB", "TJK", "CHN"]
+  },
+  {
+    "id": "TJK",
+    "canAttack": ["UZB", "AFG", "CHN", "KGZ"]
+  },
+  {
+    "id": "KGZ",
+    "canAttack": ["UZB", "TJK", "CHN", "KAZ"]
+  },
+  {
+    "id": "PAK",
+    "canAttack": ["IND", "IRN", "AFG", "CHN"]
+  },
+  {
+    "id": "IND",
+    "canAttack": ["PAK", "CHN", "NPL", "BGD", "BTN", "MMR", "LKA"]
+  },
+  {
+    "id": "LKA",
+    "canAttack": ["IND"]
+  },
+  {
+    "id": "NPL",
+    "canAttack": ["CHN", "IND"]
+  },
+  {
+    "id": "BTN",
+    "canAttack": ["IND", "CHN"]
+  },
+  {
+    "id": "CHN",
+    "canAttack": [
+      "IND",
+      "BTN",
+      "NPL",
+      "PAK",
+      "AFG",
+      "TJK",
+      "KGZ",
+      "KAZ",
+      "MNG",
+      "PRK",
+      "RUS",
+      "MMR",
+      "LAO",
+      "VNM",
+      "TWN"
+    ]
+  },
+  {
+    "id": "MNG",
+    "canAttack": ["RUS", "CHN"]
+  },
+  {
+    "id": "PRK",
+    "canAttack": ["CHN", "KOR", "RUS"]
+  },
+  {
+    "id": "KOR",
+    "canAttack": ["PRK", "JPN"]
+  },
+  {
+    "id": "TWN",
+    "canAttack": ["CHN", "PHL"]
+  },
+  {
+    "id": "VNM",
+    "canAttack": ["CHN", "LAO", "KHM"]
+  },
+  {
+    "id": "LAO",
+    "canAttack": ["CHN", "MMR", "THA", "KHM", "VNM"]
+  },
+  {
+    "id": "KHM",
+    "canAttack": ["VNM", "LAO", "THA"]
+  },
+  {
+    "id": "MMR",
+    "canAttack": ["BGD", "IND", "CHN", "LAO", "THA"]
+  },
+  {
+    "id": "BGD",
+    "canAttack": ["IND", "MMR"]
+  },
+  {
+    "id": "THA",
+    "canAttack": ["MMR", "LAO", "KHM", "MYS"]
+  },
+  {
+    "id": "MYS",
+    "canAttack": ["THA", "IDN", "PHL"]
+  },
+  {
+    "id": "IDN",
+    "canAttack": ["MYS", "PHL", "AUS", "PNG", "TLS"]
+  },
+  {
+    "id": "PHL",
+    "canAttack": ["MYS", "IDN", "TWN"]
+  },
+  {
+    "id": "PNG",
+    "canAttack": ["IDN", "AUS", "SLB"]
+  },
+  {
+    "id": "SLB",
+    "canAttack": ["PNG", "NCL"]
+  },
+  {
+    "id": "NCL",
+    "canAttack": ["SLB", "AUS", "NZL", "FJI"]
+  },
+  {
+    "id": "FJI",
+    "canAttack": ["NCL", "NZL"]
+  },
+  {
+    "id": "AUS",
+    "canAttack": ["NZL", "PNG", "IDN", "ATA", "TLS", "NCL"]
+  },
+  {
+    "id": "NZL",
+    "canAttack": ["AUS", "ATA", "NCL", "FJI"]
+  },
+  {
+    "id": "EGY",
+    "canAttack": ["JOR", "LBY", "SAU", "SDN", "ISR"]
+  },
+  {
+    "id": "LBY",
+    "canAttack": ["EGY", "SDN", "TCD", "NER", "DZA", "TUN"]
+  },
+  {
+    "id": "TUN",
+    "canAttack": ["ITA", "DZA", "LBY"]
+  },
+  {
+    "id": "DZA",
+    "canAttack": ["MAR", "TUN", "LBY", "NER", "MLI", "MRT", "ESH"]
+  },
+  {
+    "id": "MAR",
+    "canAttack": ["ESP", "DZA", "ESH"]
+  },
+  {
+    "id": "ESH",
+    "canAttack": ["MAR", "DZA", "MRT"]
+  },
+  {
+    "id": "MRT",
+    "canAttack": ["ESH", "DZA", "MLI", "SEN", "BRA"]
+  },
+  {
+    "id": "SEN",
+    "canAttack": ["BRA", "MRT", "GNB", "GIN", "MLI"]
+  },
+  {
+    "id": "GNB",
+    "canAttack": ["BRA", "SEN", "GIN"]
+  },
+  {
+    "id": "GIN",
+    "canAttack": ["BRA", "SLE", "GNB", "SEN", "MLI", "CIV", "LBR"]
+  },
+  {
+    "id": "LBR",
+    "canAttack": ["BRA", "SLE", "GIN", "CIV"]
+  },
+  {
+    "id": "SLE",
+    "canAttack": ["LBR", "GIN", "BRA"]
+  },
+  {
+    "id": "JPN",
+    "canAttack": ["RUS", "KOR"]
+  },
+  {
+    "id": "CIV",
+    "canAttack": ["LBR", "GHA", "BFA", "MLI", "GIN"]
+  },
+  {
+    "id": "MLI",
+    "canAttack": ["CIV", "GIN", "SEN", "MRT", "DZA", "NER", "BFA"]
+  },
+  {
+    "id": "BFA",
+    "canAttack": ["CIV", "GHA", "MLI", "NER", "BEN", "TGO"]
+  },
+  {
+    "id": "GHA",
+    "canAttack": ["CIV", "BFA", "TGO"]
+  },
+  {
+    "id": "TGO",
+    "canAttack": ["GHA", "BFA", "BEN"]
+  },
+  {
+    "id": "BEN",
+    "canAttack": ["TGO", "BFA", "NGA", "NER"]
+  },
+  {
+    "id": "NER",
+    "canAttack": ["TCD", "LBY", "DZA", "MLI", "BFA", "BEN", "NGA"]
+  },
+  {
+    "id": "NGA",
+    "canAttack": ["BEN", "NER", "TCD", "CMR"]
+  },
+  {
+    "id": "TCD",
+    "canAttack": ["NER", "LBY", "SDN", "CAF", "CMR", "NGA"]
+  },
+  {
+    "id": "CMR",
+    "canAttack": ["NGA", "TCD", "CAF", "COG", "GAB", "GNQ"]
+  },
+  {
+    "id": "GNQ",
+    "canAttack": ["CMR", "GAB"]
+  },
+  {
+    "id": "GAB",
+    "canAttack": ["GNQ", "CMR", "COG"]
+  },
+  {
+    "id": "CAF",
+    "canAttack": ["TCD", "CMR", "COG", "COD", "SSD", "SDN"]
+  },
+  {
+    "id": "SDN",
+    "canAttack": ["ERI", "ETH", "SSD", "CAF", "TCD", "LBY", "EGY"]
+  },
+  {
+    "id": "SSD",
+    "canAttack": ["CAF", "SDN", "ETH", "KEN", "UGA", "COD"]
+  },
+  {
+    "id": "ETH",
+    "canAttack": ["SDN", "ERI", "SOM", "KEN", "SSD", "DJI"]
+  },
+  {
+    "id": "ERI",
+    "canAttack": ["YEM", "SOM", "ETH", "SDN", "DJI"]
+  },
+  {
+    "id": "SOM",
+    "canAttack": ["YEM", "ERI", "ETH", "KEN", "DJI"]
+  },
+  {
+    "id": "KEN",
+    "canAttack": ["SOM", "ETH", "SSD", "UGA", "TZA"]
+  },
+  {
+    "id": "UGA",
+    "canAttack": ["KEN", "SSD", "COD", "TZA", "RWA"]
+  },
+  {
+    "id": "COD",
+    "canAttack": ["COG", "CAF", "SSD", "UGA", "AGO", "ZMB", "TZA", "BDI", "RWA"]
+  },
+  {
+    "id": "COG",
+    "canAttack": ["COD", "CAF", "CMR", "GAB", "AGO"]
+  },
+  {
+    "id": "AGO",
+    "canAttack": ["COD", "NAM", "ZMB", "COG"]
+  },
+  {
+    "id": "NAM",
+    "canAttack": ["AGO", "ZMB", "BWA", "ZAF", "ZWE"]
+  },
+  {
+    "id": "ZAF",
+    "canAttack": ["LSO", "BWA", "NAM", "ZWE", "MOZ", "SWZ"]
+  },
+  {
+    "id": "BWA",
+    "canAttack": ["ZAF", "NAM", "ZWE", "ZMB"]
+  },
+  {
+    "id": "ZMB",
+    "canAttack": ["AGO", "BWA", "ZWE", "COD", "TZA", "MWI", "MOZ"]
+  },
+  {
+    "id": "ZWE",
+    "canAttack": ["BWA", "NAM", "ZMB", "ZAF", "MOZ"]
+  },
+  {
+    "id": "MOZ",
+    "canAttack": ["MDG", "ZAF", "ZWE", "MWI", "ZMB", "TZA", "SWZ"]
+  },
+  {
+    "id": "MDG",
+    "canAttack": ["MOZ"]
+  },
+  {
+    "id": "TZA",
+    "canAttack": ["MOZ", "MWI", "ZMB", "COD", "BDI", "UGA", "KEN", "RWA"]
+  },
+  {
+    "id": "MWI",
+    "canAttack": ["MOZ", "ZMB", "TZA"]
+  },
+  {
+    "id": "LSO",
+    "canAttack": ["ZAF"]
+  },
+  {
+    "id": "BDI",
+    "canAttack": ["TZA", "COD", "RWA"]
+  },
+  {
+    "id": "TLS",
+    "canAttack": ["IDN", "AUS"]
+  },
+  {
+    "id": "SWZ",
+    "canAttack": ["MOZ", "ZAF"]
+  },
+  {
+    "id": "RWA",
+    "canAttack": ["TZA", "BDI", "UGA", "COD"]
+  },
+  {
+    "id": "DJI",
+    "canAttack": ["SOM", "ETH", "ERI", "YEM"]
+  },
+  {
+    "id": "ISR",
+    "canAttack": ["EGY", "JOR", "SYR"]
+  },
+  {
+    "id": "KWT",
+    "canAttack": ["IRQ", "SAU"]
+  },
+  {
+    "id": "MKD",
+    "canAttack": ["BGR", "SRB", "ALB", "GRC"]
+  },
+  {
+    "id": "MNE",
+    "canAttack": ["BIH", "ALB", "HRV", "SRB"]
+  }
+])

@@ -420,9 +420,6 @@ function main() {
     }
 
     countryCoords.forEach(x => {
-
-      spinGlobe(0.02);
-
       let cont = continents.find(
         y => y.Countries.indexOf(x.id.split("_")[0]) !== -1
       );
@@ -460,45 +457,46 @@ function main() {
             }
           }
         });
-        borderGroups.forEach(Border => {
-          if (Border.length > 1) addContinentBorder({ Name, Color, Border });
+        borderGroups.forEach((Border, i) => {
+          setTimeout(() => {
+            spinGlobe(0.01);
+            if (Border.length > 1) addContinentBorder({ Name, Color, Border });
+          }, 10 * i);
         });
       }
     });
   }
 
-  let canAttackPaths=[]
+  let canAttackPaths = [];
   function drawCanAttackPaths() {
     countries.forEach(c => {
       let canAttack = getCanAttack(c);
       let sb = sharesBorder(c, canAttack);
-      sb.no.forEach(x=>{
-        let ft = [c,x];
-        if(!canAttackPaths.find(y=>y.indexOf(c)!==-1&&y.indexOf(x)!==-1)) canAttackPaths.push(ft)
-      })
+      sb.no.forEach(x => {
+        let ft = [c, x];
+        if (
+          !canAttackPaths.find(y => y.indexOf(c) !== -1 && y.indexOf(x) !== -1)
+        )
+          canAttackPaths.push(ft);
+      });
     });
-    canAttackPaths.forEach(x=>{
-      drawPath(x, {id:`from-${x[0]}_to-${x[1]}`,width:1,color:Cesium.Color.BLACK})
-    })
+    canAttackPaths.forEach(x => {
+      drawPath(x, {
+        id: `from-${x[0]}_to-${x[1]}`,
+        width: 1,
+        color: Cesium.Color.BLACK//new Cesium.Color(0.2, 0.2, 0.2)
+      });
+    });
   }
 
   function sharesBorder(id, array) {
     let coords = countryCoords
       .filter(x => x.id.split("_")[0] === id)
-      .reduce(
-        (a, b) => [...a, ...b.coords.positions],
-        []
-      );
+      .reduce((a, b) => [...a, ...b.coords.positions], []);
     let yes = array.filter(x => {
       let xCoords = countryCoords
         .filter(y => y.id.split("_")[0] === x)
-        .reduce(
-          (a, b) => [
-            ...a,
-            ...b.coords.positions
-          ],
-          []
-        );
+        .reduce((a, b) => [...a, ...b.coords.positions], []);
       let response = xCoords.some(y =>
         coords.some(z => z.x === y.x && z.y === y.y)
       );
@@ -518,7 +516,7 @@ function main() {
     viewer.scene.primitives.remove(path);
   }
 
-  function drawPath(ids,{id,color,width}) {
+  function drawPath(ids, { id, color, width }) {
     let positions = ids.map(x => {
       let country = countryData.find(y => y.id === x);
       return Cesium.Cartesian3.fromDegrees(
@@ -529,7 +527,7 @@ function main() {
     let path = new Cesium.Primitive({
       releaseGeometryInstances: false,
       geometryInstances: new Cesium.GeometryInstance({
-        id: id?id:"path",
+        id: id ? id : "path",
         geometry: Cesium.PolylineGeometry.createGeometry(
           new Cesium.PolylineGeometry({
             positions,
@@ -544,17 +542,6 @@ function main() {
       }),
       asynchronous: false
     });
-    // let path = new Cesium.Primitive({
-    //   id: "path",
-    //   polyline: {
-    //     positions,
-    //     // clampToGround: true,
-    //     width: 8,
-    //     material: new Cesium.PolylineDashMaterialProperty({
-    //       color: Cesium.Color.RED
-    //     })
-    //   }
-    // });
     viewer.scene.primitives.add(path);
   }
 
@@ -656,7 +643,7 @@ function main() {
     fillColor = [1, 1, 1],
     strokeColor = [1, 1, 1],
     fillOpacity = 0.8,
-    strokeOpacity = 1,
+    strokeOpacity = 1.0,
     dontShow
   }) {
     if (showContinents) dontShow = true;
@@ -670,14 +657,14 @@ function main() {
     } = getExistingPrimitive(id);
 
     if (!existingPolygon && !existingCorridor && !existingHoles.length) {
-      var polygonPrimitive = new Cesium.Primitive({
+      let polygonPrimitive = new Cesium.Primitive({
         show: dontShow ? false : true,
         releaseGeometryInstances: false,
         geometryInstances: new Cesium.GeometryInstance({
           id: id + "_polygon",
           geometry: Cesium.PolygonGeometry.createGeometry(
             new Cesium.PolygonGeometry({
-              polygonHierarchy: cartesian, //new Cesium.PolygonHierarchy(cartesian),
+              polygonHierarchy: cartesian,
               height
             })
           )
@@ -704,7 +691,7 @@ function main() {
       function makeCorridor(p, isHole) {
         let cid = id + "_corridor";
         if (isHole) cid += "_hole";
-        var corridorPrimitive = new Cesium.Primitive({
+        let corridorPrimitive = new Cesium.Primitive({
           show: dontShow ? false : true,
           releaseGeometryInstances: false,
           geometryInstances: new Cesium.GeometryInstance({
@@ -823,7 +810,8 @@ function main() {
   }
 
   function spinGlobe(v) {
-      viewer.scene.camera.rotate(Cesium.Cartesian3.UNIT_Z, v);
+    console.log(v);
+    viewer.scene.camera.rotate(Cesium.Cartesian3.UNIT_Z, v);
   }
 
   function initGameMap() {
@@ -849,7 +837,6 @@ function main() {
       if (filter.length)
         filter.forEach(o => {
           setTimeout(() => {
-
             spinGlobe(0.02);
 
             removePrimitive(o.id).then(() => {
@@ -1131,7 +1118,7 @@ function main() {
             color,
             territory: [],
             image: "Images/user.png",
-            cards: ["Cavalry", "Infantry", "Artillery"],
+            cards: [], //["Cavalry", "Infantry", "Artillery"],
             continents: [],
             isComputer: i > humans - 1
           });
@@ -1410,7 +1397,7 @@ function main() {
           !players[currentPlayersTurn].territory.find(y => y.name === x) &&
           x !== defender
       );
-      console.log("setBattleCountryColors", aggressor, prevCanAttack);
+      // console.log("setBattleCountryColors", aggressor, prevCanAttack);
       prevCanAttack.forEach(c => {
         // let color = getPlayerColor(c);
         // let height = getForces(c) * 30000;
@@ -2312,7 +2299,10 @@ function main() {
                 multiCountryAssault = multiCountryAssault.slice(0, index + 1);
               else multiCountryAssault.push(id);
               removePath();
-              drawPath(multiCountryAssault, {width:8,color:Cesium.Color.RED});
+              drawPath(multiCountryAssault, {
+                width: 8,
+                color: Cesium.Color.RED
+              });
               canAttack = getCanAttack(id, players[currentPlayersTurn]);
               setCanAttackCountryColors(id, canAttack);
             } else return;

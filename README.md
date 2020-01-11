@@ -8,11 +8,13 @@ Changes/Features:
 
 - manual placement
 - ability to set names for humans or do random name gen
-- fast forward 2 speed
+- fast forward 2 speed (dont show card animation/alerts)
+- make back of card image
+- find image/icon for game log toggle (GLT)
 - set home position or home fly to continent, or country with most forces
-- show can attack lines (across water)
 - make player summary sortable by column headers
-- attack dice number / move troops number 
+- attack dice number / move troops number (max dice 3, move troops min = dice num)
+- animate continent border when new player controls it
 - create some kind of end game animation (right now it just alerts)
 
 Better AI:
@@ -23,10 +25,10 @@ Better AI:
 
 Better UI:
 
+- Troop count label isn't great / show country names below troop count when zoomed in enough
 - trade in cards is clunky
-- troop number slider is just default html
 - current player / phase button
-- battle (show players / bigger dice)
+- battle (show players / bigger dice / animations)
 - show path when moving troops (this requires find shortest path function)
 
 Other:

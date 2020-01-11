@@ -397,7 +397,7 @@ function main() {
     console.log("creating continents");
     function addContinentBorder(c) {
       var corridorPrimitive = new Cesium.Primitive({
-        show: false,
+        show: true, //false,
         releaseGeometryInstances: false,
         geometryInstances: new Cesium.GeometryInstance({
           id: c.Name,
@@ -418,7 +418,7 @@ function main() {
       });
       viewer.scene.primitives.add(corridorPrimitive);
     }
-
+    let timeout = 0;
     countryCoords.forEach(x => {
       let cont = continents.find(
         y => y.Countries.indexOf(x.id.split("_")[0]) !== -1
@@ -457,6 +457,7 @@ function main() {
             }
           }
         });
+        timeout += borderGroups.length * 10;
         borderGroups.forEach((Border, i) => {
           setTimeout(() => {
             spinGlobe(0.01);
@@ -464,6 +465,11 @@ function main() {
           }, 10 * i);
         });
       }
+    });
+    return new Promise(res => {
+      setTimeout(() => {
+        res();
+      }, timeout);
     });
   }
 
@@ -484,7 +490,7 @@ function main() {
       drawPath(x, {
         id: `from-${x[0]}_to-${x[1]}`,
         width: 1,
-        color: Cesium.Color.BLACK//new Cesium.Color(0.2, 0.2, 0.2)
+        color: Cesium.Color.BLACK //new Cesium.Color(0.2, 0.2, 0.2)
       });
     });
   }
@@ -1071,7 +1077,7 @@ function main() {
     });
   }
 
-  let showContinents = false;
+  let showContinents = true;//false;
 
   function initGame({ humans, robots }) {
     console.log({ humans, robots });
@@ -1459,22 +1465,24 @@ function main() {
       firstPlayer = currentPlayersTurn;
       initPlayerTerritories();
       addCountryLabels();
-      addContinentBorders();
-      drawCanAttackPaths();
-      setTimeout(() => {
-        initGameMap().then(() => {
-          console.log("starting game");
-          nextPlayersTurn();
-          setCardTradeInHandler();
-          setContinentsToggleHandler();
-          setGameLogToggleHandler();
-          setDetailsToggleHandler();
-          updateSummary();
-          // setTimeout(() => {
-          //   endGame(players[0]);
-          // }, 3000);
-        });
-      }, 500);
+      addContinentBorders().then(() => {
+        drawCanAttackPaths();
+        setTimeout(() => {
+          toggleContinents();
+          initGameMap().then(() => {
+            console.log("starting game");
+            nextPlayersTurn();
+            setCardTradeInHandler();
+            setContinentsToggleHandler();
+            setGameLogToggleHandler();
+            setDetailsToggleHandler();
+            updateSummary();
+            // setTimeout(() => {
+            //   endGame(players[0]);
+            // }, 3000);
+          });
+        }, 500);
+      });
     });
 
     function setContinentsToggleHandler() {

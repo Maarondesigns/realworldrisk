@@ -394,6 +394,7 @@ function main() {
   }
 
   function addContinentBorders() {
+    console.log("creating continents");
     function addContinentBorder(c) {
       var corridorPrimitive = new Cesium.Primitive({
         show: false,
@@ -419,6 +420,9 @@ function main() {
     }
 
     countryCoords.forEach(x => {
+
+      spinGlobe(0.02);
+
       let cont = continents.find(
         y => y.Countries.indexOf(x.id.split("_")[0]) !== -1
       );
@@ -463,6 +467,47 @@ function main() {
     });
   }
 
+  let canAttackPaths=[]
+  function drawCanAttackPaths() {
+    countries.forEach(c => {
+      let canAttack = getCanAttack(c);
+      let sb = sharesBorder(c, canAttack);
+      sb.no.forEach(x=>{
+        let ft = [c,x];
+        if(!canAttackPaths.find(y=>y.indexOf(c)!==-1&&y.indexOf(x)!==-1)) canAttackPaths.push(ft)
+      })
+    });
+    canAttackPaths.forEach(x=>{
+      drawPath(x, {id:`from-${x[0]}_to-${x[1]}`,width:1,color:Cesium.Color.BLACK})
+    })
+  }
+
+  function sharesBorder(id, array) {
+    let coords = countryCoords
+      .filter(x => x.id.split("_")[0] === id)
+      .reduce(
+        (a, b) => [...a, ...b.coords.positions],
+        []
+      );
+    let yes = array.filter(x => {
+      let xCoords = countryCoords
+        .filter(y => y.id.split("_")[0] === x)
+        .reduce(
+          (a, b) => [
+            ...a,
+            ...b.coords.positions
+          ],
+          []
+        );
+      let response = xCoords.some(y =>
+        coords.some(z => z.x === y.x && z.y === y.y)
+      );
+      return response;
+    });
+    let no = array.filter(x => yes.indexOf(x) === -1);
+    return { no, yes };
+  }
+
   function removePath() {
     let path = viewer.scene.primitives._primitives.find(p => {
       if (p._instanceIds && p._instanceIds[0]) {
@@ -473,7 +518,7 @@ function main() {
     viewer.scene.primitives.remove(path);
   }
 
-  function drawPath(ids) {
+  function drawPath(ids,{id,color,width}) {
     let positions = ids.map(x => {
       let country = countryData.find(y => y.id === x);
       return Cesium.Cartesian3.fromDegrees(
@@ -484,17 +529,17 @@ function main() {
     let path = new Cesium.Primitive({
       releaseGeometryInstances: false,
       geometryInstances: new Cesium.GeometryInstance({
-        id: "path",
+        id: id?id:"path",
         geometry: Cesium.PolylineGeometry.createGeometry(
           new Cesium.PolylineGeometry({
             positions,
-            width: 8
+            width
           })
         )
       }),
       appearance: new Cesium.PolylineMaterialAppearance({
         material: new Cesium.Material.fromType("PolylineDash", {
-          color: Cesium.Color.RED
+          color
         })
       }),
       asynchronous: false
@@ -610,7 +655,7 @@ function main() {
     height = 0,
     fillColor = [1, 1, 1],
     strokeColor = [1, 1, 1],
-    fillOpacity = 0.7,
+    fillOpacity = 0.8,
     strokeOpacity = 1,
     dontShow
   }) {
@@ -751,6 +796,17 @@ function main() {
     return territory.forces;
   }
 
+  function getCanAttack(id, player) {
+    let ca = [];
+    ca = countriesCanAttack.find(x => x.id === id);
+    if (ca) {
+      ca = ca.canAttack;
+      if (player)
+        ca = ca.filter(x => !player.territory.find(y => y.name === x));
+    }
+    return ca;
+  }
+
   function getPlayerColor(id) {
     let player = players.find(p => p.territory.find(t => t.name === id));
     if (player) return player.color;
@@ -766,7 +822,12 @@ function main() {
     return countryData.find(x => x.id === id).country;
   }
 
+  function spinGlobe(v) {
+      viewer.scene.camera.rotate(Cesium.Cartesian3.UNIT_Z, v);
+  }
+
   function initGameMap() {
+    console.log("initiating game map");
     // countryLabels.entities.values.forEach(l => {
     //   // let { x, y } = l.position._value;
     //   l.label.text = getForces(l.name).toString();
@@ -788,6 +849,9 @@ function main() {
       if (filter.length)
         filter.forEach(o => {
           setTimeout(() => {
+
+            spinGlobe(0.02);
+
             removePrimitive(o.id).then(() => {
               createPrimitive({
                 cartesian: o.coords,
@@ -859,7 +923,7 @@ function main() {
   }
 
   function updateMap(ids) {
-    console.log("updateMap", ids);
+    // console.log("updateMap", ids);
     let filteredLabels = countryLabels.entities.values,
       filteredCountries = countries;
     if (ids) {
@@ -1044,9 +1108,10 @@ function main() {
     let gameInstructions = document.getElementById("gameInstructions");
 
     function initPlayers() {
+      console.log("initiating players");
       players = [];
       function createPlayers(names) {
-        console.log(names);
+        console.log("creating players: ", names);
         let colors = [
           [0, 1, 0],
           [0, 0, 1],
@@ -1072,12 +1137,13 @@ function main() {
           });
         });
       }
+      console.log("fetching random names");
       return fetch(
         `https://namey.muffinlabs.com/name.json?count=${humans +
           robots}&with_surname=true&frequency=all`
       )
         .then(res => {
-          console.log(res);
+          // console.log(res);
           return res.json().then(names => {
             createPlayers(names);
           });
@@ -1170,6 +1236,7 @@ function main() {
     }
 
     function initPlayerTerritories() {
+      console.log("initiating player territories");
       shuffle(countries).forEach((e, i) => {
         let pI = i % players.length;
         let player = players[pI];
@@ -1305,7 +1372,7 @@ function main() {
             });
           });
         });
-      console.log("setCanAttackCountryColors", selected, canAttack);
+      // console.log("setCanAttackCountryColors", selected, canAttack);
       canAttack.forEach(c => {
         let height = getForces(c) * 30000;
         filter = countryCoords.filter(x => x.id.split("_")[0] === c);
@@ -1400,15 +1467,16 @@ function main() {
           document.getElementById("ff2").style.color = "red";
       }
     });
-
     initPlayers().then(() => {
       currentPlayersTurn = Math.ceil(Math.random() * players.length - 1);
       firstPlayer = currentPlayersTurn;
       initPlayerTerritories();
       addCountryLabels();
+      addContinentBorders();
+      drawCanAttackPaths();
       setTimeout(() => {
-        addContinentBorders();
         initGameMap().then(() => {
+          console.log("starting game");
           nextPlayersTurn();
           setCardTradeInHandler();
           setContinentsToggleHandler();
@@ -2204,7 +2272,6 @@ function main() {
       if (e && e.id) {
         selectEntity(e.id, p, "single");
       } else {
-        console.log("5");
         deselectEntities();
       }
     }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
@@ -2212,17 +2279,6 @@ function main() {
     viewer.screenSpaceEventHandler.removeInputAction(
       Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK
     );
-
-    function getCanAttack(id, player) {
-      let ca = [];
-      ca = countriesCanAttack.find(x => x.id === id);
-      if (ca) {
-        ca = ca.canAttack;
-        if (player)
-          ca = ca.filter(x => !player.territory.find(y => y.name === x));
-      }
-      return ca;
-    }
 
     let multiCountryAssault = [],
       isDoingMAC;
@@ -2256,7 +2312,7 @@ function main() {
                 multiCountryAssault = multiCountryAssault.slice(0, index + 1);
               else multiCountryAssault.push(id);
               removePath();
-              drawPath(multiCountryAssault);
+              drawPath(multiCountryAssault, {width:8,color:Cesium.Color.RED});
               canAttack = getCanAttack(id, players[currentPlayersTurn]);
               setCanAttackCountryColors(id, canAttack);
             } else return;
@@ -2340,7 +2396,6 @@ function main() {
     }
 
     function deselectEntities() {
-      console.log("deselectEntities");
       if (!isDoingMAC) removePath();
       let update = [];
       if (selectedCountry1) {
@@ -2375,15 +2430,16 @@ function main() {
       if (f < 1) return;
       let moveTroopsContainer = document.getElementById("moveTroopsContainer");
       moveTroopsContainer.style.display = "block";
-      moveTroopsContainer.innerHTML = `<div>How many troops do you want to place?</div>`;
-      let amount = 1;
-      moveTroopsContainer.innerHTML += `<input id='numberOfTroops' type="range" name="points" min=${1} max="${f}" value="1">`;
-      moveTroopsContainer.innerHTML += `<div id="showNumber"></div>`;
+      let cont = document.querySelector("#moveTroopsContainer > div");
+      cont.innerHTML = `<div>How many troops do you want to place?</div>`;
+      let amount;
+      cont.innerHTML += `<input id='numberOfTroops' type="range" name="points" min=${1} max="${f}" value="1">`;
+      cont.innerHTML += `<div id="showNumber"></div>`;
       let buttons = `<div class="moveTroopsButtons"><button id="moveTroops">Submit</button>`;
       // if (phase === 2)
       //   buttons += `<button id="cancelMoveTroops">Cancel</button>`;
       buttons += "</div>";
-      moveTroopsContainer.innerHTML += buttons;
+      cont.innerHTML += buttons;
       let moveTroopsButton = document.getElementById("moveTroops");
       // let cancelMoveTroopsButton = document.getElementById("cancelMoveTroops");
       let numberOfTroops = document.getElementById("numberOfTroops");
@@ -2391,14 +2447,17 @@ function main() {
       function moveTroopsChanged(val) {
         showNumber.innerHTML = val;
         amount = val;
+        let p = (val - 1) / (f - 1);
+        showNumber.style.left = `calc(${p * 100}% - ${p * 25}px)`;
       }
+      moveTroopsChanged(1);
       numberOfTroops.addEventListener("input", function(e) {
         moveTroopsChanged(+e.target.value);
       });
       moveTroopsButton.addEventListener("click", function() {
         placeForces(id, amount);
         moveTroopsContainer.style.display = "none";
-        moveTroopsContainer.innerHTML = "";
+        cont.innerHTML = "";
       });
     }
 
@@ -2834,19 +2893,20 @@ function main() {
       document.getElementById("battleContainer").style.display = "";
       let moveTroopsContainer = document.getElementById("moveTroopsContainer");
       moveTroopsContainer.style.display = "block";
-      moveTroopsContainer.innerHTML = `<div>How many troops do you want to move?</div>`;
+      let cont = document.querySelector("#moveTroopsContainer > div");
+      cont.innerHTML += `<div>How many troops do you want to move?</div>`;
       let existing = players[currentPlayersTurn].territory.find(
         x => x.name === a
       );
       let max = existing.forces - 1;
       let min = phase === 1 && max > 1 ? 2 : 1;
-      moveTroopsContainer.innerHTML += `<input id='numberOfTroops' type="range" name="points" min=${min} max="${max}">`;
-      moveTroopsContainer.innerHTML += `<div id="showNumber"></div>`;
+      cont.innerHTML += `<input id='numberOfTroops' type="range" name="points" min=${min} max="${max}">`;
+      cont.innerHTML += `<div id="showNumber"></div>`;
       let buttons = `<div class="moveTroopsButtons"><button id="moveTroops">Submit</button>`;
       if (phase === 2)
         buttons += `<button id="cancelMoveTroops">Cancel</button>`;
       buttons += "</div>";
-      moveTroopsContainer.innerHTML += buttons;
+      cont.innerHTML += buttons;
       let moveTroopsButton = document.getElementById("moveTroops");
       let cancelMoveTroopsButton = document.getElementById("cancelMoveTroops");
       let numberOfTroops = document.getElementById("numberOfTroops");
@@ -2862,6 +2922,8 @@ function main() {
           d
         });
         move = val;
+        let p = (val - min) / max;
+        showNumber.style.left = `calc(${15 + p * 70}% - ${p * 10}px)`;
       }
       numberOfTroops.addEventListener("input", function(e) {
         moveTroopsChanged(+e.target.value);
@@ -2870,11 +2932,8 @@ function main() {
 
       moveTroopsButton.addEventListener("click", function() {
         clearInterval(interval);
-        let moveTroopsContainer = document.getElementById(
-          "moveTroopsContainer"
-        );
         moveTroopsContainer.style.display = "none";
-        moveTroopsContainer.innerHTML = "";
+        cont.innerHTML = "";
         moveOver();
       });
       if (cancelMoveTroopsButton) {
@@ -2894,11 +2953,8 @@ function main() {
         };
         cancelMoveTroopsButton.addEventListener("click", function() {
           clearInterval(interval);
-          let moveTroopsContainer = document.getElementById(
-            "moveTroopsContainer"
-          );
           moveTroopsContainer.style.display = "none";
-          moveTroopsContainer.innerHTML = "";
+          cont.innerHTML = "";
           moveTroopsBack(startedAt).then(() => {
             resetCountryTransparencies();
             deselectEntities();

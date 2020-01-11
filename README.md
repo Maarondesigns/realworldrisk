@@ -12,6 +12,7 @@ Changes/Features:
 - set home position or home fly to continent, or country with most forces
 - show can attack lines (across water)
 - make player summary sortable by column headers
+- attack dice number / move troops number 
 - create some kind of end game animation (right now it just alerts)
 
 Better AI:

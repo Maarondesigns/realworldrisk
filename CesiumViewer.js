@@ -361,28 +361,81 @@ function main() {
           // }
         })
         .then(function() {
-          let startGame = document.getElementById("startGame");
-          startGame.style.display = "block";
-          let startGameButton = document.getElementById("startGameButton");
-          let humansInput = document.querySelector("#startGame #humans");
-          let robotsInput = document.querySelector("#startGame #robots");
-          startGameButton.addEventListener("click", function() {
-            let humans = +humansInput.value,
-              robots = +robotsInput.value;
-            initGame({ humans, robots });
+          fetchAutoGenNames().then(names => {
+            let humans = ["Player 1"],
+              numOfRobots = 4,
+              robots = names.slice(0, numOfRobots);
+            function updateRobots() {
+              let robotsContainer = document.querySelector(
+                "#startGame #robots"
+              );
+              robotsContainer.innerHTML = robots
+                .map(r => `<div>${r}</div>`)
+                .join("");
+            }
+            function updateHumans() {
+              let humansContainer = document.querySelector(
+                "#startGame #humans"
+              );
+              humansContainer.innerHTML = humans
+                .map(
+                  (h, i) =>
+                    `<div><input id="human_${i}" type="text" value="${h}"/></div>`
+                )
+                .join("");
+              humans.forEach((h, i) => {
+                let el = document.getElementById(`human_${i}`);
+                el.addEventListener("input", function(e) {
+                  let name = e.target.value;
+                  humans[i] = name;
+                });
+              });
+            }
+            let addHuman = document.getElementById("addHuman");
+            addHuman.addEventListener("click", function() {
+              if (humans.length + numOfRobots === 10) return;
+              humans.push(`Player ${humans.length + 1}`);
+              updateHumans();
+            });
+            let removeHuman = document.getElementById("removeHuman");
+            removeHuman.addEventListener("click", function() {
+              humans.pop();
+              updateHumans();
+            });
+            let addRobot = document.getElementById("addRobot");
+            addRobot.addEventListener("click", function() {
+              if (humans.length + numOfRobots === 10) return;
+              numOfRobots += 1;
+              robots = names.slice(0, numOfRobots);
+              updateRobots();
+            });
+            let removeRobot = document.getElementById("removeRobot");
+            removeRobot.addEventListener("click", function() {
+              numOfRobots -= 1;
+              robots = names.slice(0, numOfRobots);
+              updateRobots();
+            });
+            updateHumans();
+            updateRobots();
+            let startGame = document.getElementById("startGame");
+            startGame.style.display = "block";
+            let startGameButton = document.getElementById("startGameButton");
+            startGameButton.addEventListener("click", function() {
+              initGame({ humans, robots });
+            });
           });
-          humansInput.addEventListener("input", function(e) {
-            let humans = +e.target.value;
-            let robots = +robotsInput.value;
-            if (humans + robots > 10) robots = 10 - humans;
-            robotsInput.value = robots;
-          });
-          robotsInput.addEventListener("input", function(e) {
-            let robots = +e.target.value;
-            let humans = +humansInput.value;
-            if (humans + robots > 10) humans = 10 - robots;
-            humansInput.value = humans;
-          });
+          // humansInput.addEventListener("input", function(e) {
+          //   let humans = +e.target.value;
+          //   let robots = +robotsInput.value;
+          //   if (humans + robots > 10) robots = 10 - humans;
+          //   robotsInput.value = robots;
+          // });
+          // robotsInput.addEventListener("input", function(e) {
+          //   let robots = +e.target.value;
+          //   let humans = +humansInput.value;
+          //   if (humans + robots > 10) humans = 10 - robots;
+          //   humansInput.value = humans;
+          // });
           // startGameButton.addEventListener("click", initCanAttack);
           // startGameButton.addEventListener("click", initContinents);
         })
@@ -391,6 +444,21 @@ function main() {
         });
       // });
     }
+  }
+
+  function fetchAutoGenNames() {
+    return fetch(
+      `https://namey.muffinlabs.com/name.json?count=10&with_surname=true&frequency=all`
+    )
+      .then(res => {
+        // console.log(res);
+        return res.json().then(names => {
+          return names;
+        });
+      })
+      .catch(error => {
+        console.log(error);
+      });
   }
 
   function addContinentBorders() {
@@ -843,8 +911,7 @@ function main() {
       if (filter.length)
         filter.forEach(o => {
           setTimeout(() => {
-            spinGlobe(0.02);
-
+            spinGlobe(0.01);
             removePrimitive(o.id).then(() => {
               createPrimitive({
                 cartesian: o.coords,
@@ -1077,7 +1144,7 @@ function main() {
     });
   }
 
-  let showContinents = true;//false;
+  let showContinents = true; //false;
 
   function initGame({ humans, robots }) {
     console.log({ humans, robots });
@@ -1126,29 +1193,34 @@ function main() {
             image: "Images/user.png",
             cards: [], //["Cavalry", "Infantry", "Artillery"],
             continents: [],
-            isComputer: i > humans - 1
+            isComputer: i > humans.length - 1,
+            index: getPlayerIndex(i, names.length),
+            forcesToPlace: 0
           });
         });
       }
-      console.log("fetching random names");
-      return fetch(
-        `https://namey.muffinlabs.com/name.json?count=${humans +
-          robots}&with_surname=true&frequency=all`
-      )
-        .then(res => {
-          // console.log(res);
-          return res.json().then(names => {
-            createPlayers(names);
-          });
-        })
-        .catch(error => {
-          console.log({ error });
-          let names = [];
-          while (names.length < humans) names.push(`Human ${names.length + 1}`);
-          while (names.length < humans + robots)
-            names.push(`Robot ${names.length + 1 - humans}`);
-          createPlayers(names);
-        });
+      // console.log("fetching random names");
+      // return fetch(
+      //   `https://namey.muffinlabs.com/name.json?count=${humans +
+      //     robots}&with_surname=true&frequency=all`
+      // )
+      //   .then(res => {
+      //     // console.log(res);
+      //     return res.json().then(names => {
+      return new Promise(res => {
+        createPlayers([...humans, ...robots]);
+        res();
+      });
+      // });
+      // })
+      // .catch(error => {
+      //   console.log({ error });
+      //   let names = [];
+      //   while (names.length < humans) names.push(`Human ${names.length + 1}`);
+      //   while (names.length < humans + robots)
+      //     names.push(`Robot ${names.length + 1 - humans}`);
+      //   createPlayers(names);
+      // });
     }
 
     function showAlert(text, player) {
@@ -1438,13 +1510,13 @@ function main() {
         Cavalry: "Images/cards/cavalry.png",
         Artillery: "Images/cards/artillery.png"
       },
-      round = 0;
+      round = 0,
+      gameHasStarted,
+      fastForward = 0;
 
     let nextPhaseButton = document.getElementById("nextPhase");
     let turnOverButton = document.getElementById("turnOver");
     let fastForwardButton = document.getElementById("fastForward");
-
-    let fastForward = 0;
 
     fastForwardButton.addEventListener("click", function() {
       if (fastForward === 2) {
@@ -1460,9 +1532,11 @@ function main() {
           document.getElementById("ff2").style.color = "red";
       }
     });
+    currentPlayersTurn = Math.ceil(
+      Math.random() * (humans.length + robots.length - 1)
+    );
+    firstPlayer = currentPlayersTurn;
     initPlayers().then(() => {
-      currentPlayersTurn = Math.ceil(Math.random() * players.length - 1);
-      firstPlayer = currentPlayersTurn;
       initPlayerTerritories();
       addCountryLabels();
       addContinentBorders().then(() => {
@@ -1574,7 +1648,7 @@ function main() {
         .map(t => t.forces)
         .reduce((a, b) => {
           return a + b;
-        }, 0);
+        }, 0) + p.forcesToPlace;
     }
 
     function integerToRGB(colorArray, opacity = 1) {
@@ -1583,11 +1657,52 @@ function main() {
         .toString()}, ${opacity})`;
     }
 
+    let playerSortMethod = "Players";
+    function getSortedPlayers() {
+      let sortablePlayers = JSON.parse(JSON.stringify(players));
+      switch (playerSortMethod) {
+        case "Players":
+          return sortablePlayers.sort((a, b) => a.index - b.index);
+        case "Total Forces":
+          return sortablePlayers.sort(
+            (a, b) => calcTotalForces(b) - calcTotalForces(a)
+          );
+        case "Territory":
+          return sortablePlayers.sort(
+            (a, b) => b.territory.length - a.territory.length
+          );
+        case "Continents":
+          return sortablePlayers.sort(
+            (a, b) => b.continents.length - a.continents.length
+          );
+        case "Cards":
+          return sortablePlayers.sort(
+            (a, b) => b.cards.length - a.cards.length
+          );
+        default:
+          return sortablePlayers.sort((a, b) => a.index - b.index);
+      }
+    }
+
     function updateSummary() {
+      let headers = [
+        "Players",
+        "Total Forces",
+        "Territory",
+        "Continents",
+        "Cards"
+      ];
       let cont = document.getElementById("playersContainer");
       cont.style.display = "";
-      cont.innerHTML = `<div class="playerDetails"><div>Player</div><div>Total Forces</div><div>Territory</div><div>Continents</div><div>Cards</div></div>`;
-      cont.innerHTML += players
+      cont.innerHTML = `<div id="playerDetailsHeaders" class="playerDetails">${headers
+        .map(
+          h =>
+            `<div style="color:${
+              h === playerSortMethod ? "red" : ""
+            };">${h}</div>`
+        )
+        .join("")}</div>`;
+      cont.innerHTML += getSortedPlayers()
         .map(p => {
           let playerDetails = `<div class="playerDetails" style="color:${integerToRGB(
             p.color
@@ -1607,6 +1722,15 @@ function main() {
           return playerDetails;
         })
         .join("");
+      [...document.getElementById("playerDetailsHeaders").childNodes].forEach(
+        (el, i) => {
+          el.addEventListener("click", function() {
+            playerSortMethod = headers[i];
+            console.log(playerSortMethod);
+            updateSummary();
+          });
+        }
+      );
     }
 
     function updateContainerAndText(player) {
@@ -1646,6 +1770,11 @@ function main() {
     goToNextPhase();
     nextPhaseButton.addEventListener("click", goToNextPhase);
 
+    function getPlayerIndex(i, total) {
+      if (i < firstPlayer) i += total;
+      return i - firstPlayer;
+    }
+
     function calcForcesToPlace(player) {
       let territories = player.territory.length;
       let canPlace = Math.round(territories / 6);
@@ -1660,10 +1789,8 @@ function main() {
       }
 
       if (round === 1 && currentPlayersTurn !== firstPlayer) {
-        let cp = currentPlayersTurn;
-        if (cp < firstPlayer) cp += players.length;
-        let addForNotFP = cp - firstPlayer;
-        canPlace += addForNotFP;
+        let { index } = player;
+        canPlace += index;
         let suffixes = [
           "",
           "st",
@@ -1677,9 +1804,8 @@ function main() {
           "th",
           "th"
         ];
-        text += `<div>${addForNotFP} forces for being going ${addForNotFP + 1}${
-          suffixes[addForNotFP + 1]
-        }</div>`;
+        text += `<div>${index} force${index > 1 ? "s" : ""} for going ${index +
+          1}${suffixes[index + 1]}</div>`;
       }
       canPlace = Math.round(canPlace);
       if (canPlace < 3) canPlace = 3;
@@ -1863,8 +1989,13 @@ function main() {
       function startNextTurn() {
         phase = -1;
         goToNextPhase();
-        incrementCurrentPlayer();
-        if (round === 0) firstPlayer = currentPlayersTurn;
+        if (
+          round === 0 &&
+          currentPlayersTurn === firstPlayer &&
+          !gameHasStarted
+        )
+          gameHasStarted = true;
+        else incrementCurrentPlayer();
         if (currentPlayersTurn === firstPlayer) incrementRound();
         let player = players[currentPlayersTurn];
         if (player.isComputer) {
@@ -2241,7 +2372,13 @@ function main() {
         }
       }
       return new Promise(res => {
-        if (a && d) moveTroops({ move, a, d });
+        if (a && d) {
+          moveTroops({ move, a, d });
+          gameLog.update({
+            player: players[currentPlayersTurn],
+            text: `Moved ${move} troop${move > 1 ? "s" : ""} from ${a} to ${d}`
+          });
+        }
         setTimeout(() => {
           res(true);
         }, 400);
@@ -2784,6 +2921,11 @@ function main() {
                           () => {
                             if (wTerritory.forces > 1) {
                               if (isComputer || isMCA) {
+                                gameLog.update({
+                                  player: players[currentPlayersTurn],
+                                  text: `Moved ${wTerritory.forces -
+                                    1} troops from ${aggressor} to ${defender}`
+                                });
                                 moveTroops({
                                   move: wTerritory.forces - 1,
                                   a: aggressor,
@@ -2909,19 +3051,22 @@ function main() {
       let cancelMoveTroopsButton = document.getElementById("cancelMoveTroops");
       let numberOfTroops = document.getElementById("numberOfTroops");
       let showNumber = document.getElementById("showNumber");
-      let move = 0;
+      let move = 0,
+        final = 0;
       showNumber.innerHTML = numberOfTroops.value = 0;
 
       function moveTroopsChanged(val) {
+        let newMove = val - move;
         showNumber.innerHTML = val;
         moveTroopsQueue.push({
-          move: val - move,
+          move: newMove,
           a,
           d
         });
         move = val;
-        let p = (val - min) / max;
-        showNumber.style.left = `calc(${15 + p * 70}% - ${p * 10}px)`;
+        final += newMove;
+        let p = (val - min) / (max - min);
+        showNumber.style.left = `calc(${p * 100}% - ${p * 25}px)`;
       }
       numberOfTroops.addEventListener("input", function(e) {
         moveTroopsChanged(+e.target.value);
@@ -2929,6 +3074,8 @@ function main() {
       moveTroopsChanged(min);
 
       moveTroopsButton.addEventListener("click", function() {
+        let text = `Moved ${final} troops from ${a} to ${d}`;
+        gameLog.update({ player: players[currentPlayersTurn], text });
         clearInterval(interval);
         moveTroopsContainer.style.display = "none";
         cont.innerHTML = "";
@@ -2972,10 +3119,6 @@ function main() {
 
     function moveTroops({ move, a, d }) {
       let player = players[currentPlayersTurn];
-      if (phase === 2) {
-        let text = `Moved ${move} troops from ${a} to ${d}`;
-        gameLog.update({ player, text });
-      }
       let movingTo = player.territory.find(x => x.name === d);
       movingTo.forces += move;
       let existing = player.territory.find(x => x.name === a);

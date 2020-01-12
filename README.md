@@ -7,12 +7,10 @@ If you clone the project you can just run npm install and npm start and it works
 Changes/Features:
 
 - manual placement
-- ability to set names for humans or do random name gen
 - fast forward 2 speed (dont show card animation/alerts)
 - make back of card image
 - find image/icon for game log toggle (GLT)
 - set home position or home fly to continent, or country with most forces
-- make player summary sortable by column headers
 - attack dice number / move troops number (max dice 3, move troops min = dice num)
 - animate continent border when new player controls it
 - create some kind of end game animation (right now it just alerts)
@@ -27,7 +25,7 @@ Better UI:
 
 - Troop count label isn't great / show country names below troop count when zoomed in enough
 - trade in cards is clunky
-- current player / phase button
+- current player / phase button could be better (player image is just silhouette)
 - battle (show players / bigger dice / animations)
 - show path when moving troops (this requires find shortest path function)
 

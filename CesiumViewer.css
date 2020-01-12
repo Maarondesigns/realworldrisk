@@ -306,6 +306,13 @@ body {
   margin: 8px 20px;
 }
 
+#playerDetailsHeaders > div{
+  cursor:pointer;
+}
+#playerDetailsHeaders > div:hover{
+  color:red;
+}
+
 .playerDetails > div {
   display: flex;
   justify-content: center;
@@ -399,7 +406,6 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   padding: 10px;
-  font: bold 16px Arial;
   border-width: 2px 2px 0 2px;
   border-color: white;
   border-style: solid;
@@ -408,6 +414,65 @@ body {
 
 #startGame > div {
   margin: 5px;
+}
+
+#humansAndRobots {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+#humansAndRobots > div > div:first-child {
+  font: bold 16px Arial;
+  background: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+  border: solid 1px rgba(0, 0, 0, 0.6);
+  width: 90%;
+  margin: 0 auto 8px auto;
+  padding: 3px;
+}
+.plusMinus {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  max-width: 70px;
+  margin: auto;
+}
+.plusMinus > div {
+  cursor: pointer;
+  margin: auto;
+  height: 25px;
+  width: 25px;
+  border-radius: 50%;
+  background: white;
+  border: solid 2px black;
+  font: bold 20px Arial;
+}
+.plusMinus > div:hover {
+  color: green;
+  border-color: green;
+  box-shadow: 0 0 10px white;
+}
+#humans,
+#robots {
+  width: 93%;
+  margin: auto;
+}
+#humans > div,
+#robots > div {
+  font: 14px Arial;
+  margin: 4px 1px;
+  border: solid 1px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  padding: 2px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+}
+#humans > div > input {
+  font: 14px Arial;
+  border: none;
+  background: none;
+  text-align: center;
 }
 
 /* #alertBox:hover,
@@ -527,9 +592,9 @@ button:hover {
   font-size: 18px;
 }
 
-#moveTroopsContainer > div{
+#moveTroopsContainer > div {
   margin: 15%;
-  position:relative;
+  position: relative;
 }
 
 #moveTroopsContainer > div > input {

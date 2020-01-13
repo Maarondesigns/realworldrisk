@@ -7,7 +7,6 @@ If you clone the project you can just run npm install and npm start and it works
 Changes/Features:
 
 - manual placement
-- fast forward 2 speed (dont show card animation/alerts)
 - make back of card image
 - find image/icon for game log toggle (GLT)
 - set home position or home fly to continent, or country with most forces
@@ -17,9 +16,11 @@ Changes/Features:
 
 Better AI:
 
-- they spread out reinforcements to anyone that can attack but should make some kind of strategy
-- they don't attack players adjacent continents (sabotage)
-- they don't think about nearby countries with alot of troops (bonus: find route to merge them into existing area)
+- Continue with multiple strategies if they are in a good position. Large troop counts can get stuck in countries they aren't considering.
+- Don't spread out reinforcements to attack or reinforce, instead make some kind of strategy
+- Attack players adjacent continents or sabotage player doing too well if it's not too risky
+- Think about nearby countries with alot of troops that could attack or that they could merge into existing area
+- Take out weak player and steal cards if it's not too risky
 
 Better UI:
 

@@ -1226,6 +1226,10 @@ function main() {
     function showAlert(text, player) {
       gameLog.update({ player, text });
       return new Promise(res => {
+        if (fastForward === 2) {
+          res(true);
+          return;
+        }
         let alertBox = document.getElementById("alertBox");
         alertBox.classList.remove("fade-out");
         alertBox.classList.add("fade-in");
@@ -1644,11 +1648,13 @@ function main() {
     }
 
     function calcTotalForces(p) {
-      return p.territory
-        .map(t => t.forces)
-        .reduce((a, b) => {
-          return a + b;
-        }, 0) + p.forcesToPlace;
+      return (
+        p.territory
+          .map(t => t.forces)
+          .reduce((a, b) => {
+            return a + b;
+          }, 0) + p.forcesToPlace
+      );
     }
 
     function integerToRGB(colorArray, opacity = 1) {
@@ -1790,7 +1796,9 @@ function main() {
 
       if (round === 1 && currentPlayersTurn !== firstPlayer) {
         let { index } = player;
-        canPlace += index;
+        let fromLast = players.length - 1 - index;
+        let amount = players.length > 5 ? 10 - fromLast : 10 - fromLast * 2;
+        canPlace += amount;
         let suffixes = [
           "",
           "st",
@@ -1804,8 +1812,9 @@ function main() {
           "th",
           "th"
         ];
-        text += `<div>${index} force${index > 1 ? "s" : ""} for going ${index +
-          1}${suffixes[index + 1]}</div>`;
+        text += `<div>${amount} force${
+          amount > 1 ? "s" : ""
+        } for going ${index + 1}${suffixes[index + 1]}</div>`;
       }
       canPlace = Math.round(canPlace);
       if (canPlace < 3) canPlace = 3;
@@ -1917,6 +1926,7 @@ function main() {
     }
 
     function animateCard(card) {
+      if (fastForward === 2) return new Promise(res => res());
       // let cards = players[currentPlayersTurn].cards.length;
       let playerCards = document.getElementById("playerCards");
       let h = window.innerHeight,
@@ -2121,7 +2131,7 @@ function main() {
               res(true);
             }
           },
-          fastForward ? 300 : 2000
+          fastForward ? (fastForward === 2 ? 50 : 300) : 2000
         );
       });
     }
@@ -2260,7 +2270,7 @@ function main() {
                   // console.log(
                   //   `Should try to conquer ${tryToGetCont[0].Name} by attacking ${shouldAttack}`
                   // );
-                  let duration = 100;
+                  let duration = fastForward === 2 ? 0 : 100;
                   if (!fastForward) {
                     selectEntity(t.name);
                     duration = 600;
@@ -2288,7 +2298,7 @@ function main() {
                               )
                             );
                           },
-                          fastForward ? 100 : 300
+                          fastForward ? (fastForward === 2 ? 0 : 100) : 300
                         );
                       } else res(winner);
                       // }, 1500);
@@ -2310,7 +2320,7 @@ function main() {
                     i += 1;
                     attacks();
                   },
-                  fastForward ? 100 : 1000
+                  fastForward ? (fastForward === 2 ? 0 : 100) : 1000
                 );
               });
             } else res(true);
@@ -2379,9 +2389,12 @@ function main() {
             text: `Moved ${move} troop${move > 1 ? "s" : ""} from ${a} to ${d}`
           });
         }
-        setTimeout(() => {
-          res(true);
-        }, 400);
+        setTimeout(
+          () => {
+            res(true);
+          },
+          fastForward === 2 ? 100 : 400
+        );
       });
     }
 
@@ -2773,11 +2786,11 @@ function main() {
                   () => {
                     res(winner);
                   },
-                  fastForward ? 600 : 2000
+                  fastForward ? (fastForward === 2 ? 100 : 600) : 2000
                 );
               });
             },
-            fastForward ? 200 : 1200
+            fastForward ? (fastForward === 2 ? 80 : 200) : 1200
           );
         });
 
@@ -2936,16 +2949,20 @@ function main() {
                             } else moveOver();
                             res(winner);
                           },
-                          fastForward || isComputer ? 200 : 1200
+                          fastForward || isComputer
+                            ? fastForward === 2
+                              ? 50
+                              : 200
+                            : 1200
                         );
                       });
                     }
                   },
-                  fastForward ? 150 : 1000
+                  fastForward ? (fastForward === 2 ? 30 : 150) : 1000
                 );
               } else res(winner);
             },
-            fastForward ? 50 : 500
+            fastForward ? (fastForward === 2 ? 10 : 50) : 500
           );
         });
 
@@ -3123,6 +3140,11 @@ function main() {
       movingTo.forces += move;
       let existing = player.territory.find(x => x.name === a);
       existing.forces = existing.forces - move;
+      // if(fastForward===2){
+      //   updateMap([a, d]);
+      //   return new Promise(res=>res(true))
+      // }
+      // else
       return updateMap([a, d]);
     }
 

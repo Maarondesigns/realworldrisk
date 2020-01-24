@@ -558,6 +558,7 @@ function main() {
       });
     });
     canAttackPaths.forEach(x => {
+      spinGlobe(0.02);
       drawPath(x, {
         id: `from-${x[0]}_to-${x[1]}`,
         width: 1,
@@ -914,7 +915,7 @@ function main() {
       if (filter.length)
         filter.forEach(o => {
           setTimeout(() => {
-            spinGlobe(0.01);
+            spinGlobe(0.02);
             removePrimitive(o.id).then(() => {
               createPrimitive({
                 cartesian: o.coords,

@@ -72,7 +72,9 @@ body {
 .cesium-viewer-bottom {
   display: none !important;
 }
-
+button.cesium-button.cesium-toolbar-button[data-bind="attr: { title: buttonTooltip },click: toggleDropDown"] {
+  display: none !important;
+}
 .cesium-viewer-fullscreenContainer {
   bottom: 7px !important;
   right: 7px !important;

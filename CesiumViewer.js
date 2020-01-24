@@ -22,6 +22,9 @@
 // } from "../../Source/Cesium.js";
 
 function main() {
+  Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI5ZGFjODY4OC04NjVlLTQ0MTEtYTEzYy1iZWI4ODdhZjM0OTciLCJpZCI6MTY3NTUsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1NzExNTI1MjN9.3rBWB6NySV4EUyawEX3k3WBPLCxg-ii3kyhKNWrzKPU';
+
+
   /*
      Options parsed from query string:
        source=url          The URL of a CZML/GeoJSON/KML data source to load at startup.
@@ -47,7 +50,7 @@ function main() {
   //   sourceType: "kml"
   // };
   var endUserOptions = {
-    source: "../data/world-NE-10m-1p5.json",
+    source: "data/world-NE-10m-1p5.json",
     sourceType: "geojson"
   };
 
@@ -182,7 +185,7 @@ function main() {
     // sceneModePicker: false,
     timeline: false,
     navigationHelpButton: false,
-    baseLayerPicker: false,
+    baseLayerPicker: true,
     imageryProviderViewModels,
     selectedImageryProviderViewModel,
     terrainProviderViewModels: [],

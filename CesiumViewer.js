@@ -1,6 +1,6 @@
-window.CESIUM_BASE_URL = "./Source/";
+// window.CESIUM_BASE_URL = "./Source/";
 
-import * as Cesium from "./Source/Cesium.js";
+// import * as Cesium from "./Source/Cesium.js";
 // import {
 //   Cartesian3,
 //   Color,
@@ -182,7 +182,7 @@ function main() {
     // sceneModePicker: false,
     timeline: false,
     navigationHelpButton: false,
-    baseLayerPicker: true,
+    baseLayerPicker: false,
     imageryProviderViewModels,
     selectedImageryProviderViewModel,
     terrainProviderViewModels: [],

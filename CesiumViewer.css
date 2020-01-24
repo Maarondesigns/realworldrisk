@@ -70,7 +70,7 @@ body {
 .cesium-viewer-animationContainer,
 .cesium-viewer-timelineContainer,
 .cesium-viewer-bottom {
-  display: none;
+  display: none !important;
 }
 
 .cesium-viewer-fullscreenContainer {

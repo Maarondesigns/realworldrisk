@@ -21,9 +21,9 @@
 //   buildModuleUrl
 // } from "../../Source/Cesium.js";
 
-
-Sentry.init({ dsn: 'https://cd57a268a543414baa6015f2c0677939@sentry.io/1965024' });
-
+Sentry.init({
+  dsn: "https://cd57a268a543414baa6015f2c0677939@sentry.io/1965024"
+});
 
 function main(geo) {
   // console.log(geo);
@@ -1098,28 +1098,30 @@ function main(geo) {
         })
         .filter(x => x);
       // console.log(geometries);
-      if (scene.mode === 1) {
-        let { center, radius } = Cesium.BoundingSphere.fromBoundingSpheres(
-          geometries
-        );
-        let offset = new Cesium.HeadingPitchRange(
-          2 * Math.PI,
-          -0.785,
-          radius * 2
-        );
-        scene.camera.lookAt(center, offset);
-        scene.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
-        // viewer.trackedEntity = undefined;
-        // viewer.selectedEntity = undefined;
-      } else {
-        let offset = new Cesium.HeadingPitchRange(2 * Math.PI, pitch, range);
-        scene.camera.flyToBoundingSphere(
-          Cesium.BoundingSphere.fromBoundingSpheres(geometries),
-          {
-            offset,
-            duration: 1
-          }
-        );
+      if (geometries.length) {
+        if (scene.mode === 1) {
+          let { center, radius } = Cesium.BoundingSphere.fromBoundingSpheres(
+            geometries
+          );
+          let offset = new Cesium.HeadingPitchRange(
+            2 * Math.PI,
+            -0.785,
+            radius * 2
+          );
+          scene.camera.lookAt(center, offset);
+          scene.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+          // viewer.trackedEntity = undefined;
+          // viewer.selectedEntity = undefined;
+        } else {
+          let offset = new Cesium.HeadingPitchRange(2 * Math.PI, pitch, range);
+          scene.camera.flyToBoundingSphere(
+            Cesium.BoundingSphere.fromBoundingSpheres(geometries),
+            {
+              offset,
+              duration: 1
+            }
+          );
+        }
       }
     }
     return new Promise(res => {
@@ -1539,27 +1541,27 @@ function main(geo) {
             setGameLogToggleHandler();
             setDetailsToggleHandler();
             updateSummary();
-            toggleGameDetails()
+            toggleGameDetails();
             setTimeout(() => {
               nextPlayersTurn();
-             toggleGameDetails();
-             showGameStuff();
+              toggleGameDetails();
+              showGameStuff();
             }, 4000);
           });
         }, 500);
       });
     });
 
-    function showGameStuff(){
+    function showGameStuff() {
       gameInstructions.style.display = "grid";
-      let playersTurn = document.getElementById('playersTurn')
-      playersTurn.style.display='block';
+      let playersTurn = document.getElementById("playersTurn");
+      playersTurn.style.display = "block";
       let continentsButton = document.getElementById("continents");
-      continentsButton.style.display = "block";      
+      continentsButton.style.display = "block";
       let logToggle = document.getElementById("gameLogToggle");
       logToggle.style.display = "block";
       let roundContainer = document.getElementById("round");
-      roundContainer.style.display='block'
+      roundContainer.style.display = "block";
     }
 
     function setContinentsToggleHandler() {

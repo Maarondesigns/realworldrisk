@@ -410,6 +410,7 @@ body {
   border-color: white;
   border-style: solid;
   z-index: 1;
+  min-width: 400px;
 }
 
 #startGame > div {

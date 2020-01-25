@@ -21,7 +21,8 @@ import * as Cesium from "../../Source/Cesium.js";
 //   buildModuleUrl
 // } from "../../Source/Cesium.js";
 
-function main() {
+function main(geo) {
+  console.log(geo);
   /*
      Options parsed from query string:
        source=url          The URL of a CZML/GeoJSON/KML data source to load at startup.
@@ -47,7 +48,7 @@ function main() {
   //   sourceType: "kml"
   // };
   var endUserOptions = {
-    source: "../data/world-NE-10m-1p5.json",
+    source: "data/world-NE-10m-1p5.json",
     sourceType: "geojson"
   };
 
@@ -252,6 +253,7 @@ function main() {
     if (sourceType === "czml") {
       loadPromise = Cesium.CzmlDataSource.load(source);
     } else if (sourceType === "geojson") {
+      // loadPromise = Cesium.GeoJsonDataSource.load(geo, options);
       loadPromise = Cesium.GeoJsonDataSource.load(source, options);
       // loadPromise2 = Cesium.GeoJsonDataSource.load(source, options);
     } else if (sourceType === "kml") {
@@ -266,20 +268,14 @@ function main() {
     if (Cesium.defined(loadPromise)) {
       loadPromise
         .then(function(dataSource) {
-          // [1000, 2000, 3000, 4000, 5000, 6000].forEach(n => {
-          //   console.log(countryData.filter(x => x.Area_mi2 < n).map(x => x.id));
-          // });
           let tooSmall = countryData
-            .filter(x => x.Area_mi2 < 5000)
+            .filter(x => x.Area_mi2 < 5000 && x.id !== "XK")
             .map(x => x.id);
 
           let entities = dataSource.entities.values;
-          countryEntities = new Cesium.CustomDataSource("countryEntities");
-          viewer.dataSources.add(countryEntities);
           countries = [];
           entities.forEach(e => {
             let id = e.id.split("_")[0];
-            // id = e.properties.id.getValue();
             let country = countryData.find(co => co.id === id);
             if (
               country &&
@@ -290,75 +286,32 @@ function main() {
           });
           countries.forEach((c, ci) => {
             let country = countryData.find(co => co.id === c);
+            if (!getCanAttack(c))
+              console.log(c, country.country, country.Area_mi2);
             if (country) {
-              //   let parent = countryEntities.entities.add(
-              //     new Cesium.Entity({
-              //       id: c + "_parent",
-              //       country: country.country
-              //     })
-              //   );
-              // let objs = [{
-              //   id: c,
-              //   coords: entities
-              //   .filter(e => e.id.split("_")[0] === c)
-              //   .map(e => e.polygon.hierarchy._value.positions  )
-              // }]
-              let objs = entities
-                .filter(e => e.id.split("_")[0] === c)
-                .map(e => {
-                  return {
-                    id: e.id,
-                    coords: e.polygon.hierarchy._value
-                  };
-                });
-              countryCoords = [...countryCoords, ...objs];
-              objs.forEach(o => {
-                removePrimitive(o.id).then(() => {
-                  createPrimitive({
-                    cartesian: o.coords,
-                    id: o.id,
-                    fillOpacity: 0.3
-                  });
+            let objs = entities
+              .filter(e => e.id.split("_")[0] === c)
+              .map(e => {
+                return {
+                  id: e.id,
+                  coords: e.polygon.hierarchy._value
+                };
+              });
+            countryCoords = [...countryCoords, ...objs];
+            // let color = [Math.random(), Math.random(), Math.random()];
+            objs.forEach(o => {
+              removePrimitive(o.id).then(() => {
+                createPrimitive({
+                  cartesian: o.coords,
+                  id: o.id,
+                  fillOpacity: 0.3,
+                  fillColor: [1,1,1],
+                  // strokeColor: color
                 });
               });
-              // .forEach((e, ei) => {
-              //   // e.name = country.id;
-              //   // e.country = country.country;
-              //   // e.polygon.arcType = Cesium.ArcType.GEODESIC;
-              //   // e.polygon.material = new Cesium.Color(1, 1, 1, 0.2);
-              //   // // console.log(e.polygon.hierarchy._value.positions);
-              //   // e.corridor = new Cesium.CorridorGraphics({
-              //   //   material: new Cesium.Color(1, 1, 1, 0.7),
-              //   //   width: 8000,
-              //   //   extrudedHeight: 10000,
-              //   //   positions: e.polygon.hierarchy._value.positions //,
-              //   //   // loop: true
-              //   // });
-              //   let coords = e.polygon.hierarchy._value.positions;
-              //   // e.polygon.outlineColor = new Cesium.Color(0.6, 0.6, 0.6, 0);
-              //   // e.parent = parent;
-              //   // countryEntities.entities.add(e);
-              // });
+            });
             }
           });
-          // var lookAt = endUserOptions.lookAt;
-          // if (Cesium.defined(lookAt)) {
-          //   var entity = dataSource.entities.getById(lookAt);
-          //   if (Cesium.defined(entity)) {
-          //     viewer.trackedEntity = entity;
-          //   } else {
-          //     var error =
-          //       'No entity with id "' +
-          //       lookAt +
-          //       '" exists in the provided data source.';
-          //     showLoadError(source, error);
-          //   }
-          // } else if (
-          //   !Cesium.defined(view) &&
-          //   endUserOptions.flyTo !== "false"
-          // ) {
-          //   viewer.flyTo(dataSource);
-          // }
         })
         .then(function() {
           fetchAutoGenNames().then(names => {
@@ -399,6 +352,7 @@ function main() {
             });
             let removeHuman = document.getElementById("removeHuman");
             removeHuman.addEventListener("click", function() {
+              if (humans.length + numOfRobots === 2) return;
               humans.pop();
               updateHumans();
             });
@@ -411,6 +365,7 @@ function main() {
             });
             let removeRobot = document.getElementById("removeRobot");
             removeRobot.addEventListener("click", function() {
+              if (humans.length + numOfRobots === 2) return;
               numOfRobots -= 1;
               robots = names.slice(0, numOfRobots);
               updateRobots();
@@ -464,6 +419,7 @@ function main() {
   function addContinentBorders() {
     console.log("creating continents");
     function addContinentBorder(c) {
+      console.log(c);
       var corridorPrimitive = new Cesium.Primitive({
         show: true, //false,
         releaseGeometryInstances: false,
@@ -472,7 +428,7 @@ function main() {
           geometry: Cesium.CorridorGeometry.createGeometry(
             new Cesium.CorridorGeometry({
               positions: c.Border,
-              width: 50000,
+              width: 30000,
               extrudedHeight: 20000
             })
           )
@@ -498,14 +454,18 @@ function main() {
         let coords = x.coords.positions;
         coords.forEach((c, i) => {
           let isInterior = co => {
-            return countryCoords.some(
-              y =>
-                continents.find(
-                  z => z.Countries.indexOf(y.id.split("_")[0]) !== -1
-                ).Name === cont.Name &&
+            return countryCoords.some(y => {
+              let continent = continents.find(
+                z => z.Countries.indexOf(y.id.split("_")[0]) !== -1
+              );
+              // if(!continent) console.log(y.id)
+              return (
+                continent &&
+                continent.Name === cont.Name &&
                 y.id !== x.id &&
                 y.coords.positions.some(z => z.x === co.x && z.y === co.y)
-            );
+              );
+            });
           };
           if (
             !borderGroups[index] &&
@@ -567,16 +527,20 @@ function main() {
     let coords = countryCoords
       .filter(x => x.id.split("_")[0] === id)
       .reduce((a, b) => [...a, ...b.coords.positions], []);
-    let yes = array.filter(x => {
-      let xCoords = countryCoords
-        .filter(y => y.id.split("_")[0] === x)
-        .reduce((a, b) => [...a, ...b.coords.positions], []);
-      let response = xCoords.some(y =>
-        coords.some(z => z.x === y.x && z.y === y.y)
-      );
-      return response;
-    });
-    let no = array.filter(x => yes.indexOf(x) === -1);
+    let yes = [],
+      no = [];
+    if (array) {
+      yes = array.filter(x => {
+        let xCoords = countryCoords
+          .filter(y => y.id.split("_")[0] === x)
+          .reduce((a, b) => [...a, ...b.coords.positions], []);
+        let response = xCoords.some(y =>
+          coords.some(z => z.x === y.x && z.y === y.y)
+        );
+        return response;
+      });
+      no = array.filter(x => yes.indexOf(x) === -1);
+    }
     return { no, yes };
   }
 
@@ -720,7 +684,7 @@ function main() {
     strokeOpacity = 1.0,
     dontShow
   }) {
-    if (showContinents) dontShow = true;
+    // if (showContinents) dontShow = true;
 
     var primitives = viewer.scene.primitives;
 
@@ -884,7 +848,6 @@ function main() {
   }
 
   function spinGlobe(v) {
-    console.log(v);
     viewer.scene.camera.rotate(Cesium.Cartesian3.UNIT_Z, v);
   }
 
@@ -937,15 +900,16 @@ function main() {
               x => x.Countries.indexOf(o.id.split("_")[0]) !== -1
             );
             if (!continent) console.log(o.id);
-            createPrimitive({
-              cartesian: o.coords,
-              id: o.id + "_continent",
-              fillColor: continent.Color,
-              strokeColor: [1, 1, 1],
-              fillOpacity: 0.4,
-              strokeOpacity: 0.3,
-              dontShow: true
-            });
+            else
+              createPrimitive({
+                cartesian: o.coords,
+                id: o.id + "_continent",
+                fillColor: continent.Color,
+                strokeColor: [1, 1, 1],
+                fillOpacity: 0.4,
+                strokeOpacity: 0.3,
+                dontShow: true
+              });
             //labels
             let l = countryLabels.entities.values.find(l => l.name === c);
             l.label.text = getForces(l.name).toString();
@@ -2431,6 +2395,7 @@ function main() {
     function selectEntity(e, pos, clicked) {
       let id;
       e.id ? (id = e.id.split("_")[0]) : (id = e.split("_")[0]);
+      console.log(id);
       let player = players.find(p => p.territory.find(t => t.name === id));
       if (selectedCountry1) {
         selectedCountry2 = id;
@@ -2768,6 +2733,7 @@ function main() {
         return new Promise(res => {
           function autoBattle() {
             miniBattle().then(winner => {
+              console.log("miniBattle winner: ", winner);
               if (!winner) autoBattle();
               else res(winner);
             });
@@ -2782,15 +2748,16 @@ function main() {
             () => {
               autoRoll().then(winner => {
                 // winner.id = winner.role === "aggressor" ? aggressor : defender;
+                console.log("autoRoll winner: ", winner);
                 setTimeout(
                   () => {
                     res(winner);
                   },
-                  fastForward ? (fastForward === 2 ? 100 : 600) : 2000
+                  fastForward ? (fastForward === 2 ? 0 : 600) : 2000
                 );
               });
             },
-            fastForward ? (fastForward === 2 ? 80 : 200) : 1200
+            fastForward ? (fastForward === 2 ? 0 : 200) : 1200
           );
         });
 
@@ -2807,8 +2774,9 @@ function main() {
         ).sort((a, b) => b - a);
         if (!isComputer && !fastForward) {
           let battleDetails = document.getElementById("battleDetails");
-          battleDetails.innerHTML = "";
-          battleDetails.innerHTML = `
+          if (battleDetails) {
+            battleDetails.innerHTML = "";
+            battleDetails.innerHTML = `
         <div style="display:grid;grid-template-rows:1fr 1fr 1fr;">${aDice
           .map(d => `<div class="dice dice-${d}"></div>`)
           .join("")}</div>
@@ -2818,6 +2786,7 @@ function main() {
           <div id="aLostCount"></div>
           <div id="dLostCount"></div>
         `;
+          }
         }
         let aLostCount = 0,
           dLostCount = 0;
@@ -3457,4 +3426,19 @@ function main() {
   loadingIndicator.style.display = "none";
 }
 
-main();
+// d3.json("../data/world-NE-10m-1p5.json").then(areas => {
+d3.json("data/continentGeometries.json").then(areas => {
+  // console.log(areas)
+  // const keys = Object.keys(areas.objects);
+  const geo = areas; // topojson.feature(areas, areas.objects[keys[0]]);
+
+  geo.features = geo.features
+    .filter(x => x.geometry)
+    .map((k, i) => {
+      console.log(k);
+      var scaledK = turf.transformScale(k, 0.995);
+      scaledK.id = scaledK.properties.CONTINENT;
+      return scaledK;
+    });
+  main(geo);
+});

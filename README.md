@@ -16,6 +16,7 @@ Changes/Features:
 
 Better AI:
 
+- Move troops from one continent to another for reinforcement
 - Continue with multiple strategies if they are in a good position. Large troop counts can get stuck in countries they aren't considering.
 - Don't spread out reinforcements to attack or reinforce, instead make some kind of strategy
 - Attack players adjacent continents or sabotage player doing too well if it's not too risky

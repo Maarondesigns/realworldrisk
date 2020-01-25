@@ -1,4 +1,5 @@
-(countriesCanAttack = [{
+(countriesCanAttack = [
+  {
     "id": "USA",
     "canAttack": ["CAN", "MEX", "CUB", "RUS", "BHS"]
   },
@@ -87,12 +88,8 @@
       "GUY",
       "SUR",
       "GUF",
-      "LBR",
-      "SLE",
-      "GIN",
-      "GNB",
       "SEN",
-      "MRT"
+      "NGA"
     ]
   },
   {
@@ -201,7 +198,7 @@
   },
   {
     "id": "ITA",
-    "canAttack": ["ALB", "AUT", "BIH", "CHE", "FRA", "GRC", "HRV", "TUN", "SVN"]
+    "canAttack": ["ALB", "AUT", "CHE", "FRA", "GRC", "HRV", "TUN", "SVN"]
   },
   {
     "id": "CHE",
@@ -209,7 +206,7 @@
   },
   {
     "id": "AUT",
-    "canAttack": ["CHE", "CZE", "DEU", "HUN", "HRV", "ITA", "SVK", "SVN"]
+    "canAttack": ["CHE", "CZE", "DEU", "HUN", "ITA", "SVK", "SVN"]
   },
   {
     "id": "CZE",
@@ -225,19 +222,23 @@
   },
   {
     "id": "HRV",
-    "canAttack": ["AUT", "BIH", "HUN", "ITA", "MNE", "SRB", "SVN"]
+    "canAttack": ["BIH", "HUN", "ITA", "MNE", "SRB", "SVN"]
   },
   {
     "id": "BIH",
-    "canAttack": ["ALB", "HRV", "ITA", "SRB", "MNE"]
+    "canAttack": ["HRV", "SRB", "MNE"]
   },
   {
     "id": "SRB",
-    "canAttack": ["ALB", "BGR", "BIH", "GRC", "HUN", "HRV", "ROU", "MNE", "MKD"]
+    "canAttack": ["BGR", "BIH", "HUN", "HRV", "ROU", "MNE", "MKD", "XK"]
   },
   {
     "id": "ALB",
-    "canAttack": ["BGR", "BIH", "GRC", "ITA", "SRB", "MNE", "MKD", "HRV"]
+    "canAttack": ["GRC", "ITA", "MNE", "MKD", "XK"]
+  },
+  {
+    "id": "XK",
+    "canAttack": ["ALB", "MNE", "MKD", "SRB"]
   },
   {
     "id": "GRC",
@@ -249,7 +250,7 @@
   },
   {
     "id": "BGR",
-    "canAttack": ["ALB", "GRC", "ROU", "SRB", "TUR", "MKD"]
+    "canAttack": ["GRC", "ROU", "SRB", "TUR", "MKD"]
   },
   {
     "id": "ROU",
@@ -330,7 +331,8 @@
       "PRK",
       "MNG",
       "KAZ",
-      "USA", "JPN"
+      "USA",
+      "JPN"
     ]
   },
   {
@@ -475,11 +477,11 @@
   },
   {
     "id": "EGY",
-    "canAttack": ["JOR", "LBY", "SAU", "SDN", "ISR"]
+    "canAttack": ["JOR", "LBY", "SAU", "SDN", "ISR", "GRC"]
   },
   {
     "id": "LBY",
-    "canAttack": ["EGY", "SDN", "TCD", "NER", "DZA", "TUN"]
+    "canAttack": ["EGY", "SDN", "TCD", "NER", "DZA", "TUN", "GRC"]
   },
   {
     "id": "TUN",
@@ -487,7 +489,7 @@
   },
   {
     "id": "DZA",
-    "canAttack": ["MAR", "TUN", "LBY", "NER", "MLI", "MRT", "ESH"]
+    "canAttack": ["ESP", "MAR", "TUN", "LBY", "NER", "MLI", "MRT", "ESH"]
   },
   {
     "id": "MAR",
@@ -499,7 +501,7 @@
   },
   {
     "id": "MRT",
-    "canAttack": ["ESH", "DZA", "MLI", "SEN", "BRA"]
+    "canAttack": ["ESH", "DZA", "MLI", "SEN"]
   },
   {
     "id": "SEN",
@@ -507,19 +509,19 @@
   },
   {
     "id": "GNB",
-    "canAttack": ["BRA", "SEN", "GIN"]
+    "canAttack": ["SEN", "GIN"]
   },
   {
     "id": "GIN",
-    "canAttack": ["BRA", "SLE", "GNB", "SEN", "MLI", "CIV", "LBR"]
+    "canAttack": ["SLE", "GNB", "SEN", "MLI", "CIV", "LBR"]
   },
   {
     "id": "LBR",
-    "canAttack": ["BRA", "SLE", "GIN", "CIV"]
+    "canAttack": ["SLE", "GIN", "CIV"]
   },
   {
     "id": "SLE",
-    "canAttack": ["LBR", "GIN", "BRA"]
+    "canAttack": ["LBR", "GIN"]
   },
   {
     "id": "JPN",
@@ -555,7 +557,7 @@
   },
   {
     "id": "NGA",
-    "canAttack": ["BEN", "NER", "TCD", "CMR"]
+    "canAttack": ["BEN", "NER", "TCD", "CMR", "BRA"]
   },
   {
     "id": "TCD",
@@ -687,7 +689,7 @@
   },
   {
     "id": "MKD",
-    "canAttack": ["BGR", "SRB", "ALB", "GRC"]
+    "canAttack": ["BGR", "SRB", "ALB", "GRC", "XK"]
   },
   {
     "id": "MNE",

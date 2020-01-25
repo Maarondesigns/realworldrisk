@@ -21,6 +21,10 @@
 //   buildModuleUrl
 // } from "../../Source/Cesium.js";
 
+
+Sentry.init({ dsn: 'https://cd57a268a543414baa6015f2c0677939@sentry.io/1965024' });
+
+
 function main(geo) {
   // console.log(geo);
   Cesium.Ion.defaultAccessToken =

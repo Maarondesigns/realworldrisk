@@ -522,7 +522,7 @@ function main(geo) {
       drawPath(x, {
         id: `from-${x[0]}_to-${x[1]}`,
         width: 1,
-        color: Cesium.Color.BLACK //new Cesium.Color(0.2, 0.2, 0.2)
+        color: Cesium.Color.WHITE //new Cesium.Color(0.2, 0.2, 0.2)
       });
     });
   }

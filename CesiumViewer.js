@@ -161,7 +161,7 @@ function main(geo) {
     creationFunction: function() {
       return new Cesium.TileMapServiceImageryProvider({
         // url: Cesium.buildModuleUrl("Assets/Textures/NaturalEarthII")
-        url: "data/mapTiles/naturalEarth"
+        url: "data/mapTiles/naturalEarthSmall"
       });
     }
   });
@@ -210,7 +210,7 @@ function main(geo) {
   let naturalEarthDark = layers.addImageryProvider(
     new Cesium.TileMapServiceImageryProvider({
       // url: Cesium.buildModuleUrl("Assets/Textures/NaturalEarthII")
-      url: "data/mapTiles/naturalEarthDark"
+      url: "data/mapTiles/naturalEarthDarkSmall"
     })
   );
   setTimeout(() => {

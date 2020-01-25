@@ -158,12 +158,17 @@ button.cesium-button.cesium-toolbar-button[data-bind="attr: { title: buttonToolt
 }
 
 #round {
+  display: none;
   position: absolute;
-  top: 5px;
-  left: 5px;
-  color: white;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border: solid 2px;
+  border-radius: 14px;
   font-weight: bold;
   z-index: 1;
+  padding: 4px 8px;
 }
 
 #gameLog {
@@ -253,14 +258,14 @@ button.cesium-button.cesium-toolbar-button[data-bind="attr: { title: buttonToolt
 #gameDetails {
   max-width: 100%;
   position: absolute;
-  display: none;
   top: 50%;
   left: 50%;
   padding: 0;
   transform: translate(-50%, -50%);
   z-index: 98;
-  overflow: hidden;
   opacity: 0;
+  overflow: auto;
+  max-height: 90%;
 }
 
 #gameDetails > div {
@@ -316,6 +321,10 @@ button.cesium-button.cesium-toolbar-button[data-bind="attr: { title: buttonToolt
   font-weight: bold;
   box-shadow: 0 0 10px 1px;
   margin: 8px 20px;
+  height: 60px;
+  border: solid 1px;
+  border-radius: 6px;
+  overflow: hidden;
 }
 
 #playerDetailsHeaders > div {
@@ -330,7 +339,7 @@ button.cesium-button.cesium-toolbar-button[data-bind="attr: { title: buttonToolt
   justify-content: center;
   align-items: center;
   padding: 6px;
-  background: rgba(200, 200, 200, 0.5);
+  background: rgba(200, 200, 200, 0.8);
 }
 
 .playerNames {
@@ -346,11 +355,9 @@ button.cesium-button.cesium-toolbar-button[data-bind="attr: { title: buttonToolt
   left: 50%;
   transform: translateX(-50%);
   min-width: 220px;
-  min-height: 76px;
   text-align: center;
   z-index: 1;
-  padding-left: 40px;
-  height: calc(12% - 4px);
+  padding: 5px;
   border-width: 2px;
   border-style: solid;
   display: none;
@@ -359,8 +366,9 @@ button.cesium-button.cesium-toolbar-button[data-bind="attr: { title: buttonToolt
 #fastForward {
   display: none;
   position: absolute;
-  top: 58px;
-  left: calc(50% + 156px);
+  top: 50%;
+  right: 3px;
+  transform: translateY(-50%);
   border-radius: 50%;
   border: solid 3px rgba(0, 0, 0, 0.7);
   background: white;
@@ -422,8 +430,10 @@ button.cesium-button.cesium-toolbar-button[data-bind="attr: { title: buttonToolt
   border-width: 2px 2px 0 2px;
   border-color: white;
   border-style: solid;
+  border-radius: 8px;
   z-index: 1;
-  min-width: 400px;
+  width: 400px;
+  max-width: calc(100% - 90px);
 }
 
 #startGame > div {
@@ -590,17 +600,30 @@ button:hover {
 #battleContainer,
 #moveTroopsContainer {
   position: fixed;
-  bottom: 85px;
+  bottom: 35px;
   left: 50%;
   transform: translateX(-50%);
   display: none;
-  min-height: 20%;
-  width: 35%;
+  height: 25%;
+  max-height: 165px;
+  min-height: 125px;
+  width: 400px;
   min-width: 300px;
+  max-width: 80%;
   background: rgba(0, 0, 0, 0.6);
   border-radius: 6px;
-  color: white;
   text-align: center;
+}
+
+#battleContainer {
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+}
+
+#moveTroopsContainer {
+  background: white;
+  border: solid 4px;
+  color: black;
 }
 
 .battleHeader {
@@ -610,7 +633,7 @@ button:hover {
 }
 
 #moveTroopsContainer > div {
-  margin: 15%;
+  margin: 20px;
   position: relative;
 }
 @media only screen and (max-width: 500px) {
@@ -621,15 +644,18 @@ button:hover {
     top: 10%;
     left: calc(50% - 50px);
   }
-  #fastForward {
-    top: 42px;
-    left: calc(50% + 112px);
-  }
   .playerDetails {
     margin: 8px 5px;
   }
   .playerDetails > div {
     overflow: hidden;
+  }
+}
+
+@media only screen and (max-width: 700px) {
+  #battleContainer,
+  #moveTroopsContainer {
+    bottom: 85px;
   }
 }
 
@@ -750,16 +776,19 @@ button:hover {
 }
 
 #playersTurn {
+  display: none;
   border-radius: 50%;
   height: 12vh;
   width: 12vh;
   min-height: 80px;
   min-width: 80px;
   position: absolute;
-  background: inherit;
-  transform: translate(-50%, -4%);
-  border: inherit;
-  box-shadow: inherit;
+  top: 32px;
+  left: 35px;
+  background: white;
+  text-align: center;
+  border: solid 2px;
+  z-index: 1;
 }
 
 #playersTurn > div:nth-child(2),
@@ -770,14 +799,14 @@ button:hover {
 #playersTurn > div:first-child {
   font-size: 18px;
   font-weight: bold;
-  padding: 5px;
+  padding: 3px 0;
   background: rgba(255, 255, 255, 0.8);
   box-shadow: 0px 2px 6px grey;
   position: absolute;
   bottom: 20%;
   transform: translateY(50%);
-  left: -5%;
-  width: 110%;
+  left: -5px;
+  width: calc(100% + 10px);
 }
 
 #placeTroops {

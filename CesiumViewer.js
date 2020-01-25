@@ -22,9 +22,9 @@
 // } from "../../Source/Cesium.js";
 
 function main(geo) {
-  console.log(geo)
-  Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI5ZGFjODY4OC04NjVlLTQ0MTEtYTEzYy1iZWI4ODdhZjM0OTciLCJpZCI6MTY3NTUsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1NzExNTI1MjN9.3rBWB6NySV4EUyawEX3k3WBPLCxg-ii3kyhKNWrzKPU';
-
+  // console.log(geo);
+  Cesium.Ion.defaultAccessToken =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI5ZGFjODY4OC04NjVlLTQ0MTEtYTEzYy1iZWI4ODdhZjM0OTciLCJpZCI6MTY3NTUsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1NzExNTI1MjN9.3rBWB6NySV4EUyawEX3k3WBPLCxg-ii3kyhKNWrzKPU";
 
   /*
      Options parsed from query string:
@@ -157,7 +157,7 @@ function main(geo) {
     creationFunction: function() {
       return new Cesium.TileMapServiceImageryProvider({
         // url: Cesium.buildModuleUrl("Assets/Textures/NaturalEarthII")
-        url: "data/mapTiles/naturalEarth3"
+        url: "data/mapTiles/naturalEarth"
       });
     }
   });
@@ -200,6 +200,18 @@ function main(geo) {
     // terrainExaggeration: 40
     // requestRenderMode: true
   });
+
+  let layers = viewer.scene.imageryLayers;
+  // let grid = layers.addImageryProvider(new Cesium.GridImageryProvider());
+  let naturalEarthDark = layers.addImageryProvider(
+    new Cesium.TileMapServiceImageryProvider({
+      // url: Cesium.buildModuleUrl("Assets/Textures/NaturalEarthII")
+      url: "data/mapTiles/naturalEarthDark"
+    })
+  );
+  setTimeout(() => {
+    naturalEarthDark.alpha = 0;
+  }, 10000);
 
   viewer.extend(Cesium.viewerDragDropMixin);
   if (endUserOptions.inspector) {
@@ -292,27 +304,27 @@ function main(geo) {
             if (!getCanAttack(c))
               console.log(c, country.country, country.Area_mi2);
             if (country) {
-            let objs = entities
-              .filter(e => e.id.split("_")[0] === c)
-              .map(e => {
-                return {
-                  id: e.id,
-                  coords: e.polygon.hierarchy._value
-                };
-              });
-            countryCoords = [...countryCoords, ...objs];
-            // let color = [Math.random(), Math.random(), Math.random()];
-            objs.forEach(o => {
-              removePrimitive(o.id).then(() => {
-                createPrimitive({
-                  cartesian: o.coords,
-                  id: o.id,
-                  fillOpacity: 0.3,
-                  fillColor: [1,1,1],
-                  // strokeColor: color
+              let objs = entities
+                .filter(e => e.id.split("_")[0] === c)
+                .map(e => {
+                  return {
+                    id: e.id,
+                    coords: e.polygon.hierarchy._value
+                  };
+                });
+              countryCoords = [...countryCoords, ...objs];
+              // let color = [Math.random(), Math.random(), Math.random()];
+              objs.forEach(o => {
+                removePrimitive(o.id).then(() => {
+                  createPrimitive({
+                    cartesian: o.coords,
+                    id: o.id,
+                    fillOpacity: 0.3,
+                    fillColor: [1, 1, 1]
+                    // strokeColor: color
+                  });
                 });
               });
-            });
             }
           });
         })
@@ -422,7 +434,7 @@ function main(geo) {
   function addContinentBorders() {
     console.log("creating continents");
     function addContinentBorder(c) {
-      console.log(c);
+      // console.log(c);
       var corridorPrimitive = new Cesium.Primitive({
         show: true, //false,
         releaseGeometryInstances: false,
@@ -948,6 +960,7 @@ function main(geo) {
           showPrimitive(o.id);
         });
     });
+    naturalEarthDark.alpha = 0;
   }
 
   function updateMap(ids) {
@@ -1516,25 +1529,37 @@ function main(geo) {
         setTimeout(() => {
           toggleContinents();
           initGameMap().then(() => {
-            console.log("starting game");
-            nextPlayersTurn();
+            // console.log("starting game");
             setCardTradeInHandler();
             setContinentsToggleHandler();
             setGameLogToggleHandler();
             setDetailsToggleHandler();
             updateSummary();
-            // setTimeout(() => {
-            //   endGame(players[0]);
-            // }, 3000);
+            toggleGameDetails()
+            setTimeout(() => {
+              nextPlayersTurn();
+             toggleGameDetails();
+             showGameStuff();
+            }, 4000);
           });
         }, 500);
       });
     });
 
+    function showGameStuff(){
+      gameInstructions.style.display = "grid";
+      let playersTurn = document.getElementById('playersTurn')
+      playersTurn.style.display='block';
+      let continentsButton = document.getElementById("continents");
+      continentsButton.style.display = "block";      
+      let logToggle = document.getElementById("gameLogToggle");
+      logToggle.style.display = "block";
+      let roundContainer = document.getElementById("round");
+      roundContainer.style.display='block'
+    }
+
     function setContinentsToggleHandler() {
       let continentsButton = document.getElementById("continents");
-      gameInstructions.style.display = "grid";
-      continentsButton.style.display = "block";
       continentsButton.addEventListener("click", toggleContinents);
     }
 
@@ -1575,7 +1600,6 @@ function main(geo) {
 
     function setGameLogToggleHandler() {
       let logToggle = document.getElementById("gameLogToggle");
-      logToggle.style.display = "block";
       logToggle.addEventListener("click", toggleGameLog);
     }
 
@@ -1605,11 +1629,11 @@ function main(geo) {
       if (gd.classList.contains("slide-in")) {
         gd.classList.add("slide-out");
         gd.classList.remove("slide-in");
-        setTimeout(() => {
-          gd.style.display = "none";
-        }, 500);
+        // setTimeout(() => {
+        //   gd.style.display = "none";
+        // }, 500);
       } else {
-        gd.style.display = "block";
+        // gd.style.display = "block";
         gd.classList.add("slide-in");
         gd.classList.remove("slide-out");
       }
@@ -1683,7 +1707,7 @@ function main(geo) {
           )};">`;
           playerDetails += `<div class="playerNames" style="color:white;background:${integerToRGB(
             p.color,
-            0.6
+            0.8
           )};">${p.name}${p.isComputer ? " (computer)" : ""}</div>`;
           playerDetails += `<div>${calcTotalForces(p)}</div>`;
           let tL = p.territory.length,
@@ -2693,6 +2717,7 @@ function main(geo) {
       }
 
       if (!fastForward) {
+        naturalEarthDark.alpha = 1.0;
         setBattleCountryColors({
           aggressor,
           defender
@@ -3439,7 +3464,7 @@ d3.json("data/continentGeometries.json").then(areas => {
   geo.features = geo.features
     .filter(x => x.geometry)
     .map((k, i) => {
-      console.log(k);
+      // console.log(k);
       var scaledK = turf.transformScale(k, 0.995);
       scaledK.id = scaledK.properties.CONTINENT;
       return scaledK;

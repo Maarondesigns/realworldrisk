@@ -5,6 +5,7 @@
     <meta charset="utf-8" />
     <!-- Tell IE to use the latest, best version. -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
     <!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
     <meta
       name="viewport"
@@ -21,6 +22,11 @@
     <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
     <script src="https://unpkg.com/topojson@3"></script>
     <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.62/Build/Cesium/Cesium.js"></script>
+    <link
+      href="https://cesium.com/downloads/cesiumjs/releases/1.62/Build/Cesium/Widgets/widgets.css"
+      rel="stylesheet"
+    />
   </head>
 
   <body>
@@ -30,7 +36,7 @@
           <div id="round"></div>
           <div id="gameDetailsToggle"></div>
           <div id="continents"></div>
-          <div id="gameLogToggle">GLT</div>
+          <div id="gameLogToggle"></div>
           <div id="gameDetails">
             <div id="playersContainer">
               <div>Players</div>
@@ -110,6 +116,6 @@
     <script type="text/javascript" src="data/countryData.json"></script>
     <script type="text/javascript" src="data/canAttack.json"></script>
     <script type="text/javascript" src="data/continents.json"></script>
-    <script src="CesiumViewer.js" type="module"></script>
+    <script src="./CesiumViewer.js" type="module"></script>
   </body>
 </html>

@@ -8,7 +8,12 @@ body {
   margin: 0;
   overflow: hidden;
   padding: 0;
-  /* background: #000; */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 #gameOuterContainer {
@@ -70,9 +75,11 @@ body {
 .cesium-viewer-animationContainer,
 .cesium-viewer-timelineContainer,
 .cesium-viewer-bottom {
-  display: none;
+  display: none !important;
 }
-
+button.cesium-button.cesium-toolbar-button[data-bind="attr: { title: buttonTooltip },click: toggleDropDown"] {
+  display: none !important;
+}
 .cesium-viewer-fullscreenContainer {
   bottom: 7px !important;
   right: 7px !important;
@@ -218,7 +225,7 @@ body {
   border: solid 2px;
   border-color: inherit;
   border-radius: 50%;
-  background-color: rgba(255, 0, 0, 0.6);
+  background-color: rgb(255, 161, 161);
   box-shadow: 0 0 5px white;
   cursor: pointer;
   height: 28px;
@@ -232,16 +239,19 @@ body {
 }
 #gameLogToggle {
   left: 85px;
+  background-image: url(Images/game-log.png);
+  background-size: cover;
 }
 
 #continents:hover,
 #gameLogToggle:hover,
 #gameDetailsToggle:hover {
-  background-color: rgba(255, 0, 0, 0.9);
+  background-color: rgb(255, 86, 86);
   box-shadow: 0 0 15px white;
 }
 
 #gameDetails {
+  max-width: 100%;
   position: absolute;
   display: none;
   top: 50%;
@@ -295,10 +305,12 @@ body {
 }
 
 #playersContainer {
+  max-width: 100%;
   overflow: auto;
 }
 
 .playerDetails {
+  max-width: 100%;
   grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
   display: grid;
   font-weight: bold;
@@ -306,11 +318,11 @@ body {
   margin: 8px 20px;
 }
 
-#playerDetailsHeaders > div{
-  cursor:pointer;
+#playerDetailsHeaders > div {
+  cursor: pointer;
 }
-#playerDetailsHeaders > div:hover{
-  color:red;
+#playerDetailsHeaders > div:hover {
+  color: red;
 }
 
 .playerDetails > div {
@@ -333,10 +345,11 @@ body {
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  min-width: 300px;
+  min-width: 220px;
+  min-height: 76px;
   text-align: center;
   z-index: 1;
-  padding-left: 50px;
+  padding-left: 40px;
   height: calc(12% - 4px);
   border-width: 2px;
   border-style: solid;
@@ -418,8 +431,10 @@ body {
 }
 
 #humansAndRobots {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+}
+#humansAndRobots > div {
+  width: 50%;
 }
 #humansAndRobots > div > div:first-child {
   font: bold 16px Arial;
@@ -575,12 +590,13 @@ button:hover {
 #battleContainer,
 #moveTroopsContainer {
   position: fixed;
-  bottom: 5%;
+  bottom: 85px;
   left: 50%;
   transform: translateX(-50%);
   display: none;
   min-height: 20%;
   width: 35%;
+  min-width: 300px;
   background: rgba(0, 0, 0, 0.6);
   border-radius: 6px;
   color: white;
@@ -596,6 +612,25 @@ button:hover {
 #moveTroopsContainer > div {
   margin: 15%;
   position: relative;
+}
+@media only screen and (max-width: 500px) {
+  #moveTroopsContainer > div {
+    margin: 8%;
+  }
+  #playerCards {
+    top: 10%;
+    left: calc(50% - 50px);
+  }
+  #fastForward {
+    top: 42px;
+    left: calc(50% + 112px);
+  }
+  .playerDetails {
+    margin: 8px 5px;
+  }
+  .playerDetails > div {
+    overflow: hidden;
+  }
 }
 
 #moveTroopsContainer > div > input {
@@ -718,6 +753,8 @@ button:hover {
   border-radius: 50%;
   height: 12vh;
   width: 12vh;
+  min-height: 80px;
+  min-width: 80px;
   position: absolute;
   background: inherit;
   transform: translate(-50%, -4%);

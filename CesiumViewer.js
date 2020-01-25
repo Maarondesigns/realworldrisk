@@ -1,6 +1,6 @@
-window.CESIUM_BASE_URL = "../../Source/";
+// window.CESIUM_BASE_URL = "./Source/";
 
-import * as Cesium from "../../Source/Cesium.js";
+// import * as Cesium from "./Source/Cesium.js";
 // import {
 //   Cartesian3,
 //   Color,
@@ -22,7 +22,10 @@ import * as Cesium from "../../Source/Cesium.js";
 // } from "../../Source/Cesium.js";
 
 function main(geo) {
-  console.log(geo);
+  console.log(geo)
+  Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI5ZGFjODY4OC04NjVlLTQ0MTEtYTEzYy1iZWI4ODdhZjM0OTciLCJpZCI6MTY3NTUsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1NzExNTI1MjN9.3rBWB6NySV4EUyawEX3k3WBPLCxg-ii3kyhKNWrzKPU';
+
+
   /*
      Options parsed from query string:
        source=url          The URL of a CZML/GeoJSON/KML data source to load at startup.
@@ -515,6 +518,7 @@ function main(geo) {
       });
     });
     canAttackPaths.forEach(x => {
+      spinGlobe(0.02);
       drawPath(x, {
         id: `from-${x[0]}_to-${x[1]}`,
         width: 1,
@@ -874,7 +878,7 @@ function main(geo) {
       if (filter.length)
         filter.forEach(o => {
           setTimeout(() => {
-            spinGlobe(0.01);
+            spinGlobe(0.02);
             removePrimitive(o.id).then(() => {
               createPrimitive({
                 cartesian: o.coords,

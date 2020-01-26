@@ -20,10 +20,10 @@
 //   ProviderViewModel,
 //   buildModuleUrl
 // } from "../../Source/Cesium.js";
-
-Sentry.init({
-  dsn: "https://cd57a268a543414baa6015f2c0677939@sentry.io/1965024"
-});
+if (window.location.hostname !== "localhost")
+  Sentry.init({
+    dsn: "https://cd57a268a543414baa6015f2c0677939@sentry.io/1965024"
+  });
 
 function main(geo) {
   // console.log(geo);
@@ -233,6 +233,7 @@ function main(geo) {
     showLoadError(name, error);
   });
 
+  //main globals
   var scene = viewer.scene;
   var context = scene.context;
   if (endUserOptions.debug) {
@@ -241,13 +242,12 @@ function main(geo) {
     context.logShaderCompilation = true;
     context.throwOnWebGLError = true;
   }
-
   let countryEntities,
     countryBorders,
     countryLabels,
     countries,
-    countryCoords = [];
-
+    countryCoords = [],
+    userManuallyMoved;
   var view = endUserOptions.view;
   var source = endUserOptions.source;
   var options = endUserOptions.sourceOptions;
@@ -778,12 +778,12 @@ function main(geo) {
       }
       primitives.add(polygonPrimitive);
     } else {
-      console.log({
-        id,
-        existingPolygon,
-        existingCorridor,
-        existingHoles
-      });
+      // console.log({
+      //   id,
+      //   existingPolygon,
+      //   existingCorridor,
+      //   existingHoles
+      // });
     }
     return new Promise(res => res(true));
   }
@@ -1084,7 +1084,8 @@ function main(geo) {
   }
 
   function flyToCountries({ ids, pitch = -2 * Math.PI, range = 10000000 }) {
-    if (ids && ids.length) {
+    // console.log({userManuallyMoved,ids})
+    if (!userManuallyMoved && ids && ids.length) {
       let geometries = ids
         .map(id => {
           let ps = viewer.scene.primitives._primitives.filter(
@@ -1490,6 +1491,7 @@ function main(geo) {
       });
     }
 
+    //game global variables
     let currentPlayersTurn,
       firstPlayer,
       playerGetsACard,
@@ -1503,7 +1505,8 @@ function main(geo) {
       },
       round = 0,
       gameHasStarted,
-      fastForward = 0;
+      fastForward = 0,
+      battleOccurred;
 
     let nextPhaseButton = document.getElementById("nextPhase");
     let turnOverButton = document.getElementById("turnOver");
@@ -1772,7 +1775,12 @@ function main(geo) {
         currentPhase.innerHTML += `<span id="placeTroops"></span>`;
     }
     goToNextPhase();
-    nextPhaseButton.addEventListener("click", goToNextPhase);
+    nextPhaseButton.addEventListener("click", function() {
+      if (phase === 1 && !battleOccurred) {
+        if (window.confirm("You haven't attacked anyone! Are you sure?"))
+          goToNextPhase();
+      } else goToNextPhase();
+    });
 
     function getPlayerIndex(i, total) {
       if (i < firstPlayer) i += total;
@@ -1995,6 +2003,7 @@ function main(geo) {
         startNextTurn();
       }
       function startNextTurn() {
+        battleOccurred = false;
         phase = -1;
         goToNextPhase();
         if (
@@ -2074,63 +2083,97 @@ function main(geo) {
       let canTrade = canTradeCards(player);
       if (canTrade) tradeInCards(player, canTrade);
       return new Promise(res => {
-        let alreadyReinforced = [];
-        let interval = setInterval(
-          () => {
-            if (player.forcesToPlace) {
-              let tryToGetCont = shouldTryToConquerContinent(player);
-              let shouldReinforce = shouldReinforceContinent(
-                player,
-                !tryToGetCont[0] || !+tryToGetCont[0].percent
-              );
-              let id, amount;
-              if (shouldReinforce.length) {
-                id = shouldReinforce[0].country;
-                amount = shouldReinforce[0].amount;
-                // gameLog.update({ player, text: `Should reinforce ${id}` });
-                // console.log(`Should reinforce ${id}`);
-              } else {
-                let countries = tryToGetCont[0].Countries.filter(x =>
+        let fp = player.forcesToPlace,
+          willReinforce = [];
+
+        // let interval = setInterval(
+        //   () => {
+        while (fp) {
+          let tryToGetCont = shouldTryToConquerContinent(player);
+          let shouldReinforce = shouldReinforceContinent(
+            player,
+            !tryToGetCont[0] || !+tryToGetCont[0].percent
+          );
+          let id, amount;
+          if (shouldReinforce.length) {
+            id = shouldReinforce[0].country;
+            amount = shouldReinforce[0].amount;
+            // gameLog.update({ player, text: `Should reinforce ${id}` });
+            // console.log(`Should reinforce ${id}`);
+            if (amount > fp) amount = fp;
+            if (amount < 1 && fp) amount = 1;
+            willReinforce.push({ id, amount });
+            fp -= amount;
+          }
+          if (tryToGetCont.length) {
+            let countries = tryToGetCont[0].Countries.filter(x =>
+              player.territory.find(y => y.name === x)
+            )
+              .filter(x => getCanAttack(x, player).length)
+              .filter(x => !willReinforce.find(y => y.id === x));
+            // console.log({ alreadyReinforced, countries });
+            countries
+              .map(x => x)
+              .forEach(c => {
+                let ca = getCanAttack(c, player);
+                ca.filter(x =>
                   player.territory.find(y => y.name === x)
-                )
-                  .filter(x => getCanAttack(x, player).length)
-                  .filter(x => alreadyReinforced.indexOf(x) === -1);
-                // console.log({ alreadyReinforced, countries });
-                countries
-                  .map(x => x)
-                  .forEach(c => {
-                    let ca = getCanAttack(c, player);
-                    ca.filter(x =>
-                      player.territory.find(y => y.name === x)
-                    ).forEach(x => {
-                      if (countries.indexOf(x) === -1) countries.push(x);
-                    });
-                  });
-                id = countries[Math.floor(Math.random() * countries.length)];
-                amount = Math.round(player.forcesToPlace / countries.length);
-                alreadyReinforced.push(id);
-                // gameLog.update({
-                //   player,
-                //   text: `Should try to conquer ${tryToGetCont[0].Name} by reinforcing ${id}`
-                // });
-              }
-              if (amount > player.forcesToPlace) amount = player.forcesToPlace;
-              if (amount < 1 && player.forcesToPlace) amount = 1;
-              // console.log(
-              //   `Should try to conquer ${tryToGetCont[0].Name} by reinforcing ${id} with ${amount} forces.`
-              // );
+                ).forEach(x => {
+                  if (countries.indexOf(x) === -1) countries.push(x);
+                });
+              });
+            id = countries[Math.floor(Math.random() * countries.length)];
+            amount = Math.round(fp / countries.length);
+            // gameLog.update({
+            //   player,
+            //   text: `Should try to conquer ${tryToGetCont[0].Name} by reinforcing ${id}`
+            // });
+            if (amount > fp) amount = fp;
+            if (amount < 1 && fp) amount = 1;
+            if (amount !== 0) {
+              willReinforce.push({ id, amount });
+              fp -= amount;
+            }
+          }
+          // console.log(
+          //   `Should try to conquer ${tryToGetCont[0].Name} by reinforcing ${id} with ${amount} forces.`
+          // );
+        }
+        let i = -1;
+        function doStuff() {
+          i += 1;
+          if (i === willReinforce.length) {
+            res(true);
+          } else {
+            let { amount, id } = willReinforce[i];
+            let duration = fastForward ? (fastForward === 2 ? 0 : 200) : 1000;
+            setTimeout(() => {
               if (!fastForward)
                 flyToCountries({ ids: [id] }).then(() => {
-                  placeForces(id, amount);
+                  if (!fastForward) placeForces(id, amount);
+                  doStuff();
                 });
-              else placeForces(id, amount);
-            } else {
-              clearInterval(interval);
-              res(true);
-            }
-          },
-          fastForward ? (fastForward === 2 ? 50 : 300) : 2000
-        );
+              else {
+                placeForces(id, amount);
+                doStuff();
+              }
+            }, duration);
+          }
+        }
+        doStuff();
+        // let ps = willReinforce.map(({id,amount},i)=>{
+
+        //   })
+        // Promise.all(ps).then((done)=>{
+        //   console.log(done)
+        //   res(true);
+        // })
+        // else {
+        // clearInterval(interval);
+        // }
+        //   },
+        //   fastForward ? (fastForward === 2 ? 50 : 300) : 2000
+        // );
       });
     }
 
@@ -2423,13 +2466,28 @@ function main(geo) {
       Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK
     );
 
+    let isMoving;
+    viewer.screenSpaceEventHandler.setInputAction(function() {
+      userManuallyMoved = true;
+    }, Cesium.ScreenSpaceEventType.LEFT_DOWN);
+    viewer.screenSpaceEventHandler.setInputAction(function() {
+      if (!isMoving) userManuallyMoved = false;
+    }, Cesium.ScreenSpaceEventType.LEFT_UP);
+    viewer.camera.moveStart.addEventListener(function() {
+      isMoving = true;
+    });
+    viewer.camera.moveEnd.addEventListener(function() {
+      isMoving = false;
+      userManuallyMoved = false;
+    });
+
     let multiCountryAssault = [],
       isDoingMAC;
 
     function selectEntity(e, pos, clicked) {
       let id;
       e.id ? (id = e.id.split("_")[0]) : (id = e.split("_")[0]);
-      console.log(id);
+      // console.log(id);
       let player = players.find(p => p.territory.find(t => t.name === id));
       if (selectedCountry1) {
         selectedCountry2 = id;
@@ -2695,6 +2753,7 @@ function main(geo) {
     }
 
     function battle(aggressor, defender, isComputer, isMCA) {
+      battleOccurred = true;
       let aP = {
         name: getPlayerName(aggressor),
         color: getPlayerColor(aggressor)
@@ -2750,7 +2809,9 @@ function main(geo) {
             retreatButton = document.getElementById("retreat");
             rollDiceButton.addEventListener("click", miniBattle);
             autoRollButton.addEventListener("click", autoRoll);
-            retreatButton.addEventListener("click", endMove);
+            retreatButton.addEventListener("click", function() {
+              endMove(selectedCountry1);
+            });
           }
         }
       }
@@ -2768,7 +2829,7 @@ function main(geo) {
         return new Promise(res => {
           function autoBattle() {
             miniBattle().then(winner => {
-              console.log("miniBattle winner: ", winner);
+              // console.log("miniBattle winner: ", winner);
               if (!winner) autoBattle();
               else res(winner);
             });
@@ -2783,7 +2844,7 @@ function main(geo) {
             () => {
               autoRoll().then(winner => {
                 // winner.id = winner.role === "aggressor" ? aggressor : defender;
-                console.log("autoRoll winner: ", winner);
+                // console.log("autoRoll winner: ", winner);
                 setTimeout(
                   () => {
                     res(winner);
@@ -2891,7 +2952,7 @@ function main(geo) {
                       battleDetails.innerHTML = `<div>${winner.name} wins!</div>`;
                     }
                     if (role === "defender") {
-                      moveOver();
+                      moveOver([defender, aggressor]);
                       res(winner);
                     } else if (role === "aggressor") {
                       playerGetsACard = true;
@@ -2937,7 +2998,11 @@ function main(geo) {
                         setTimeout(
                           () => {
                             if (wTerritory.forces > 1) {
-                              if (isComputer || isMCA) {
+                              if (
+                                isComputer ||
+                                isMCA ||
+                                wTerritory.forces < 4
+                              ) {
                                 gameLog.update({
                                   player: players[currentPlayersTurn],
                                   text: `Moved ${wTerritory.forces -
@@ -2948,14 +3013,17 @@ function main(geo) {
                                   a: aggressor,
                                   d: defender
                                 });
-                                moveOver();
+                                let ids = [defender];
+                                if (wTerritory.forces - 1 === 1)
+                                  ids.push(aggressor);
+                                moveOver(ids);
                               } else showMoveTroopsSlider(aggressor, defender);
-                            } else moveOver();
+                            } else moveOver([defender, aggresor]);
                             res(winner);
                           },
                           fastForward || isComputer
                             ? fastForward === 2
-                              ? 50
+                              ? 0
                               : 200
                             : 1200
                         );
@@ -3100,7 +3168,14 @@ function main(geo) {
         clearInterval(interval);
         moveTroopsContainer.style.display = "none";
         cont.innerHTML = "";
-        moveOver();
+        let player = players[currentPlayersTurn];
+        let movingTo = player.territory.find(x => x.name === d);
+        let existing = player.territory.find(x => x.name === a);
+        let ids = [];
+        if (movingTo.forces > existing.forces) ids.push(d);
+        else if (existing.forces > movingTo.forces) ids.push(a);
+        else ids = [d, a];
+        moveOver(ids);
       });
       if (cancelMoveTroopsButton) {
         let startedAt = {
@@ -3152,8 +3227,8 @@ function main(geo) {
       return updateMap([a, d]);
     }
 
-    function moveOver() {
-      endMove();
+    function moveOver(ids) {
+      endMove(ids);
       resetCountryTransparencies();
       updateSummary();
     }
@@ -3164,16 +3239,16 @@ function main(geo) {
       battleContainer.style.display = "none";
     }
 
-    function endMove() {
+    function endMove(ids) {
       hideBattleDetails();
       if (phase === 1) {
         let pitch = -2 * Math.PI;
         if (scene.mode === 1) pitch = -1;
         if (!fastForward) {
           flyToCountries({
-            ids: [selectedCountry1, selectedCountry2],
+            ids, //: [selectedCountry1, selectedCountry2],
             pitch,
-            range: 5000000
+            range: 0 //5000000
           });
         }
       }

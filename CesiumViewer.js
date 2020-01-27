@@ -352,15 +352,16 @@ function main(geo) {
               humansContainer.innerHTML = humans
                 .map(
                   (h, i) =>
-                    //`<div><textarea id="human_${i}" type="text" value="${h}">${h}</textarea></div>`
-                    `<div id="human_${i}" contentEditable="true">${h}</div>`
+                    `<div><textarea id="human_${i}" type="text" value="${h}">${h}</textarea></div>`
                 )
                 .join("");
               humans.forEach((h, i) => {
                 let el = document.getElementById(`human_${i}`);
                 el.addEventListener("input", function(e) {
-                  // let name = e.target.value;
-                  let name = e.target.innerText;
+                  // let t = e.target;
+                  let name = el.value;
+                  if (el.scrollTop != 0)
+                    el.style.height = el.scrollHeight + "px";
                   humans[i] = name;
                 });
               });
@@ -2783,7 +2784,7 @@ function main(geo) {
             rollDiceButton.addEventListener("click", miniBattle);
             autoRollButton.addEventListener("click", autoRoll);
             retreatButton.addEventListener("click", function() {
-              endMove(selectedCountry1);
+              endMove([selectedCountry1]);
             });
           }
         }

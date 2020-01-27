@@ -504,13 +504,16 @@ button.cesium-button.cesium-toolbar-button[data-bind="attr: { title: buttonToolt
   justify-content: center;
   background: white;
 }
-/* #humans > div > textarea {
+#humans > div > textarea {
   font-size: 14px;
   border: none;
+  height: 20px;
+  resize: none;
+  overflow:hidden;
   background: none;
   text-align: center;
   font-family: "Uncial Antiqua", cursive;
-} */
+}
 
 /* #alertBox:hover,
 #fastForward:hover,

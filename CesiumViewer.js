@@ -352,13 +352,15 @@ function main(geo) {
               humansContainer.innerHTML = humans
                 .map(
                   (h, i) =>
-                    `<div><input id="human_${i}" type="text" value="${h}"/></div>`
+                    //`<div><textarea id="human_${i}" type="text" value="${h}">${h}</textarea></div>`
+                    `<div id="human_${i}" contentEditable="true">${h}</div>`
                 )
                 .join("");
               humans.forEach((h, i) => {
                 let el = document.getElementById(`human_${i}`);
                 el.addEventListener("input", function(e) {
-                  let name = e.target.value;
+                  // let name = e.target.value;
+                  let name = e.target.innerText;
                   humans[i] = name;
                 });
               });
@@ -1714,9 +1716,12 @@ function main(geo) {
           let playerDetails = `<div class="playerDetails" style="color:${integerToRGB(
             p.color
           )};">`;
-          playerDetails += `<div class="playerNames" style="color:white;background:${integerToRGB(
+          let tColor = "white";
+          if (p.color[0] === 1 && p.color[1] === 1 && p.color[2] === 0)
+            tColor = "rgb(150,150,150)";
+          playerDetails += `<div class="playerNames" style="color:${tColor};background:${integerToRGB(
             p.color,
-            0.8
+            0.9
           )};">${p.name}${p.isComputer ? " (computer)" : ""}</div>`;
           playerDetails += `<div>${calcTotalForces(p)}</div>`;
           let tL = p.territory.length,
@@ -2083,69 +2088,50 @@ function main(geo) {
       let canTrade = canTradeCards(player);
       if (canTrade) tradeInCards(player, canTrade);
       return new Promise(res => {
-        let fp = player.forcesToPlace,
-          willReinforce = [];
+        let alreadyReinforced = [];
 
-        // let interval = setInterval(
-        //   () => {
-        while (fp) {
-          let tryToGetCont = shouldTryToConquerContinent(player);
-          let shouldReinforce = shouldReinforceContinent(
-            player,
-            !tryToGetCont[0] || !+tryToGetCont[0].percent
-          );
-          let id, amount;
-          if (shouldReinforce.length) {
-            id = shouldReinforce[0].country;
-            amount = shouldReinforce[0].amount;
-            // gameLog.update({ player, text: `Should reinforce ${id}` });
-            // console.log(`Should reinforce ${id}`);
-            if (amount > fp) amount = fp;
-            if (amount < 1 && fp) amount = 1;
-            willReinforce.push({ id, amount });
-            fp -= amount;
-          }
-          if (tryToGetCont.length) {
-            let countries = tryToGetCont[0].Countries.filter(x =>
-              player.territory.find(y => y.name === x)
-            )
-              .filter(x => getCanAttack(x, player).length)
-              .filter(x => !willReinforce.find(y => y.id === x));
-            // console.log({ alreadyReinforced, countries });
-            countries
-              .map(x => x)
-              .forEach(c => {
-                let ca = getCanAttack(c, player);
-                ca.filter(x =>
-                  player.territory.find(y => y.name === x)
-                ).forEach(x => {
-                  if (countries.indexOf(x) === -1) countries.push(x);
-                });
-              });
-            id = countries[Math.floor(Math.random() * countries.length)];
-            amount = Math.round(fp / countries.length);
-            // gameLog.update({
-            //   player,
-            //   text: `Should try to conquer ${tryToGetCont[0].Name} by reinforcing ${id}`
-            // });
-            if (amount > fp) amount = fp;
-            if (amount < 1 && fp) amount = 1;
-            if (amount !== 0) {
-              willReinforce.push({ id, amount });
-              fp -= amount;
-            }
-          }
-          // console.log(
-          //   `Should try to conquer ${tryToGetCont[0].Name} by reinforcing ${id} with ${amount} forces.`
-          // );
-        }
-        let i = -1;
         function doStuff() {
-          i += 1;
-          if (i === willReinforce.length) {
+          if (player.forcesToPlace < 1) {
             res(true);
           } else {
-            let { amount, id } = willReinforce[i];
+            let tryToGetCont = shouldTryToConquerContinent(player);
+            let shouldReinforce = shouldReinforceContinent(
+              player,
+              !tryToGetCont[0] || !+tryToGetCont[0].percent
+            );
+            let id, amount;
+            if (shouldReinforce.length) {
+              id = shouldReinforce[0].country;
+              amount = shouldReinforce[0].amount;
+              // gameLog.update({ player, text: `Should reinforce ${id}` });
+              // console.log(`Should reinforce ${id}`);
+            } else {
+              let countries = tryToGetCont[0].Countries.filter(x =>
+                player.territory.find(y => y.name === x)
+              )
+                .filter(x => getCanAttack(x, player).length)
+                .filter(x => !alreadyReinforced.find(y => y === x));
+              countries
+                .map(x => x)
+                .forEach(c => {
+                  let ca = getCanAttack(c, player);
+                  ca.filter(x =>
+                    player.territory.find(y => y.name === x)
+                  ).forEach(x => {
+                    if (countries.indexOf(x) === -1) countries.push(x);
+                  });
+                });
+              id = countries[Math.floor(Math.random() * countries.length)];
+              amount = Math.round(player.forcesToPlace / countries.length);
+              alreadyReinforced.push(id);
+              // gameLog.update({
+              //   player,
+              //   text: `Should try to conquer ${tryToGetCont[0].Name} by reinforcing ${id}`
+              // });
+            }
+            if (amount > player.forcesToPlace) amount = player.forcesToPlace;
+            if (amount < 1 && player.forcesToPlace) amount = 1;
+
             let duration = fastForward ? (fastForward === 2 ? 0 : 200) : 1000;
             setTimeout(() => {
               if (!fastForward)
@@ -2161,19 +2147,6 @@ function main(geo) {
           }
         }
         doStuff();
-        // let ps = willReinforce.map(({id,amount},i)=>{
-
-        //   })
-        // Promise.all(ps).then((done)=>{
-        //   console.log(done)
-        //   res(true);
-        // })
-        // else {
-        // clearInterval(interval);
-        // }
-        //   },
-        //   fastForward ? (fastForward === 2 ? 50 : 300) : 2000
-        // );
       });
     }
 

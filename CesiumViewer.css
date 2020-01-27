@@ -14,6 +14,7 @@ body {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  font-family: "Uncial Antiqua", cursive;
 }
 
 #gameOuterContainer {
@@ -38,7 +39,7 @@ body {
   margin: 0;
   overflow: hidden;
   padding: 0;
-  font-family: sans-serif;
+  /* font-family: sans-serif; */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -66,7 +67,7 @@ body {
   margin: 0;
   overflow: hidden;
   padding: 0;
-  font-family: sans-serif;
+  /* font-family: sans-serif; */
   box-shadow: 0 0 50px black;
   position: relative;
 }
@@ -219,9 +220,7 @@ button.cesium-button.cesium-toolbar-button[data-bind="attr: { title: buttonToolt
   cursor: pointer;
   height: 28px;
   width: 28px;
-  z-index: 99;
 }
-
 #gameLogToggle,
 #gameDetailsToggle {
   display: none;
@@ -235,9 +234,13 @@ button.cesium-button.cesium-toolbar-button[data-bind="attr: { title: buttonToolt
   cursor: pointer;
   height: 28px;
   width: 28px;
-  z-index: 99;
+}
+#gameLogToggle,
+#continents {
+  z-index: 98;
 }
 #gameDetailsToggle {
+  z-index: 99;
   left: 5px;
   background-image: url(Images/multiple-users.png);
   background-size: cover;
@@ -269,8 +272,12 @@ button.cesium-button.cesium-toolbar-button[data-bind="attr: { title: buttonToolt
 }
 
 #gameDetails > div {
-  color: white;
+  color: black;
   display: grid;
+  /* -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.4); */
+  font-size: 20px;
+  font-weight: 700;
+  /* font-family: "Uncial Antiqua", cursive; */
 }
 
 .slide-in {
@@ -321,7 +328,7 @@ button.cesium-button.cesium-toolbar-button[data-bind="attr: { title: buttonToolt
   font-weight: bold;
   box-shadow: 0 0 10px 1px;
   margin: 8px 20px;
-  height: 60px;
+  height: 45px;
   border: solid 1px;
   border-radius: 6px;
   overflow: hidden;
@@ -339,7 +346,7 @@ button.cesium-button.cesium-toolbar-button[data-bind="attr: { title: buttonToolt
   justify-content: center;
   align-items: center;
   padding: 6px;
-  background: rgba(200, 200, 200, 0.8);
+  background: rgba(150, 150, 150, 0.9);
 }
 
 .playerNames {
@@ -375,6 +382,7 @@ button.cesium-button.cesium-toolbar-button[data-bind="attr: { title: buttonToolt
   padding: 5px;
   font-size: 20px;
   font-weight: bold;
+  font-family: Arial;
   z-index: 2;
   cursor: pointer;
 }
@@ -447,7 +455,8 @@ button.cesium-button.cesium-toolbar-button[data-bind="attr: { title: buttonToolt
   width: 50%;
 }
 #humansAndRobots > div > div:first-child {
-  font: bold 16px Arial;
+  font-weight: bold;
+  font-size: 16px;
   background: rgba(0, 0, 0, 0.1);
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
   border: solid 1px rgba(0, 0, 0, 0.6);
@@ -469,7 +478,8 @@ button.cesium-button.cesium-toolbar-button[data-bind="attr: { title: buttonToolt
   border-radius: 50%;
   background: white;
   border: solid 2px black;
-  font: bold 20px Arial;
+  font-weight: bold;
+  font-size: 20px;
 }
 .plusMinus > div:hover {
   color: green;
@@ -483,23 +493,24 @@ button.cesium-button.cesium-toolbar-button[data-bind="attr: { title: buttonToolt
 }
 #humans > div,
 #robots > div {
-  font: 14px Arial;
+  font-size: 14px;
   margin: 4px 1px;
   border: solid 1px rgba(0, 0, 0, 0.2);
   border-radius: 5px;
   padding: 2px;
-  height: 20px;
+  /* height: 20px; */
   display: flex;
   align-items: center;
   justify-content: center;
   background: white;
 }
-#humans > div > input {
-  font: 14px Arial;
+/* #humans > div > textarea {
+  font-size: 14px;
   border: none;
   background: none;
   text-align: center;
-}
+  font-family: "Uncial Antiqua", cursive;
+} */
 
 /* #alertBox:hover,
 #fastForward:hover,
@@ -521,8 +532,8 @@ button:hover {
 
 #playerCards {
   position: absolute;
-  top: 8%;
-  left: calc(50% - 85px);
+  bottom: 50px;
+  right: 80px;
   z-index: 1;
   cursor: pointer;
 }
@@ -556,7 +567,7 @@ button:hover {
 
 #lgCardContainer > div {
   padding: 8px;
-  font-family: MedievalSharp;
+  /* font-family: "Uncial Antiqua", cursive; */
   font-size: 24px;
   font-weight: bold;
   border: solid 4px rgba(0, 0, 0, 0.2);
@@ -574,7 +585,7 @@ button:hover {
 
 #playerCards > div {
   position: absolute;
-  font-family: MedievalSharp;
+  /* font-family: "Uncial Antiqua", cursive; */
   font-size: 9px;
   font-weight: bold;
   height: 42px;
@@ -636,14 +647,33 @@ button:hover {
   margin: 20px;
   position: relative;
 }
+@media screen and (max-width: 500px), screen and (max-height: 500px) {
+  #playerCards {
+    right: 40px;
+  }
+  .playerDetails {
+    margin: 5px 20px;
+    height: fit-content;
+  }
+  #gameDetails > div {
+    font-size: 14px;
+  }
+}
 @media only screen and (max-width: 500px) {
+  #gameInstructions {
+    top: 45px;
+    left: 67%;
+    min-width: unset;
+    width: 184px;
+  }
+  #playersTurn {
+    top: 2px;
+    left: 5px;
+  }
   #moveTroopsContainer > div {
     margin: 8%;
   }
-  #playerCards {
-    top: 10%;
-    left: calc(50% - 50px);
-  }
+
   .playerDetails {
     margin: 8px 5px;
   }

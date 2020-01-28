@@ -1570,7 +1570,9 @@ function main(geo) {
               if (prevGame) {
                 let player = players[currentPlayersTurn];
                 updateContainerAndText(player);
-                if (player.isComputer) doComputerPlayerTurn(player);
+                if (player.isComputer){
+                  fastForwardButton.style.display = "block";
+                  doComputerPlayerTurn(player);}
               }
             }, 4000);
           });
@@ -1714,7 +1716,7 @@ function main(geo) {
       }
     }
 
-    function gameChanged() {
+    function saveGameInLocalStorage() {
       localStorage.setItem(
         "prevGame",
         JSON.stringify({
@@ -1729,7 +1731,7 @@ function main(geo) {
     }
 
     function updateSummary() {
-      gameChanged();
+      saveGameInLocalStorage();
 
       let headers = [
         "Players",
@@ -1816,7 +1818,7 @@ function main(geo) {
       currentPhase.innerHTML = "Current Phase: " + phases[phase];
       if (phase === 0)
         currentPhase.innerHTML += `<span id="placeTroops"></span>`;
-      gameChanged();
+      saveGameInLocalStorage();
     }
     goToNextPhase();
     nextPhaseButton.addEventListener("click", function() {
@@ -1869,9 +1871,9 @@ function main(geo) {
       canPlace = Math.round(canPlace);
       if (canPlace < 3) canPlace = 3;
       text += `<div>Total: ${canPlace}</div>`;
-      return showAlert(text, player).then(() => {
-        return canPlace;
-      });
+      player.forcesToPlace = canPlace;
+      saveGameInLocalStorage();
+      return showAlert(text, player);
     }
 
     function calcForcesFromContinent(name) {
@@ -2074,7 +2076,6 @@ function main(geo) {
         updateSummary();
         updatePlayersCards();
         calcForcesToPlace(player).then(f => {
-          player.forcesToPlace = f;
           updateContainerAndText(player);
           updateSummary();
           updatePlayersCards();
@@ -2103,6 +2104,7 @@ function main(geo) {
     }
 
     function doComputerPlayerTurn(player) {
+      console.log('doComputerPlayerTurn',{phase})
       nextPhaseButton.style.display = "none";
       //COMPUTER STRATEGY:
       //look for highest probability of getting a continent and try to get it without losing too many forces
@@ -2112,41 +2114,37 @@ function main(geo) {
       //if your position looks indefensible run away
       //if no good options make yourself not appealing to attack and attack the lowest bordering
       //country in order to get a card
-      let place, attack;
+      let stuff;
       if (phase === 0) {
-        place = new Promise(res => {
+        stuff = new Promise(res => {
           placeComputerForces(player).then(() => {
             goToNextPhase();
-            res();
-          });
-        });
-        attack = new Promise(res => {
-          computerAttackPhase(player).then(() => {
-            goToNextPhase();
-            res();
+            computerAttackPhase(player).then(() => {
+              goToNextPhase();
+              res();
+            });
           });
         });
       } else {
-        place = new Promise(res => res());
-        if (phase > 1) attack = new Promise(res => res());
+        if (phase > 1) stuff = new Promise(res => res());
         else
-          attack = new Promise(res => {
+          stuff = new Promise(res => {
             computerAttackPhase(player).then(() => {
               goToNextPhase();
               res();
             });
           });
       }
-      place.then(() => {
-        attack.then(() => {
+
+        stuff.then(() => {
           computerMoveForces(player).then(() => {
             nextPlayersTurn();
           });
         });
-      });
     }
 
     function placeComputerForces(player) {
+      console.log('placeComputerForces', player.forcesToPlace)
       let canTrade = canTradeCards(player);
       if (canTrade) tradeInCards(player, canTrade);
       return new Promise(res => {
@@ -2300,7 +2298,8 @@ function main(geo) {
       //that have a lot of troops to attack into the continent with
     }
 
-    function computerAttackPhase(player) {
+    function computerAttackPhase(player) {      
+      console.log('computerAttackPhase', player)
       return new Promise(res => {
         let tryToGetCont = shouldTryToConquerContinent(player);
         let countries = tryToGetCont[0].Countries.filter(x =>

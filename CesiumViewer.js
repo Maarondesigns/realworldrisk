@@ -333,86 +333,85 @@ function main(geo) {
           });
         })
         .then(function() {
-          fetchAutoGenNames().then(names => {
-            let humans = ["Player 1"],
-              numOfRobots = 4,
-              robots = names.slice(0, numOfRobots);
-            function updateRobots() {
-              let robotsContainer = document.querySelector(
-                "#startGame #robots"
-              );
-              robotsContainer.innerHTML = robots
-                .map(r => `<div>${r}</div>`)
-                .join("");
-            }
-            function updateHumans() {
-              let humansContainer = document.querySelector(
-                "#startGame #humans"
-              );
-              humansContainer.innerHTML = humans
-                .map(
-                  (h, i) =>
-                    `<div><textarea id="human_${i}" type="text" value="${h}">${h}</textarea></div>`
-                )
-                .join("");
-              humans.forEach((h, i) => {
-                let el = document.getElementById(`human_${i}`);
-                el.addEventListener("input", function(e) {
-                  // let t = e.target;
-                  let name = el.value;
-                  if (el.scrollTop != 0)
-                    el.style.height = el.scrollHeight + "px";
-                  humans[i] = name;
+          let prevGame = localStorage.getItem("prevGame");
+          let confirm;
+          if (prevGame) {
+            confirm = window.confirm(
+              "Would you like to continue your previous game?"
+            );
+            if (confirm) initGame({}, JSON.parse(prevGame));
+            else localStorage.removeItem("prevGame");
+          }
+          if (!confirm) {
+            fetchAutoGenNames().then(names => {
+              let humans = ["Player 1"],
+                numOfRobots = 4,
+                robots = names.slice(0, numOfRobots);
+              function updateRobots() {
+                let robotsContainer = document.querySelector(
+                  "#startGame #robots"
+                );
+                robotsContainer.innerHTML = robots
+                  .map(r => `<div>${r}</div>`)
+                  .join("");
+              }
+              function updateHumans() {
+                let humansContainer = document.querySelector(
+                  "#startGame #humans"
+                );
+                humansContainer.innerHTML = humans
+                  .map(
+                    (h, i) =>
+                      `<div><textarea id="human_${i}" type="text" value="${h}">${h}</textarea></div>`
+                  )
+                  .join("");
+                humans.forEach((h, i) => {
+                  let el = document.getElementById(`human_${i}`);
+                  el.addEventListener("input", function(e) {
+                    // let t = e.target;
+                    let name = el.value;
+                    if (el.scrollTop != 0)
+                      el.style.height = el.scrollHeight + "px";
+                    humans[i] = name;
+                  });
                 });
+              }
+              let addHuman = document.getElementById("addHuman");
+              addHuman.addEventListener("click", function() {
+                if (humans.length + numOfRobots === 10) return;
+                humans.push(`Player ${humans.length + 1}`);
+                updateHumans();
               });
-            }
-            let addHuman = document.getElementById("addHuman");
-            addHuman.addEventListener("click", function() {
-              if (humans.length + numOfRobots === 10) return;
-              humans.push(`Player ${humans.length + 1}`);
+              let removeHuman = document.getElementById("removeHuman");
+              removeHuman.addEventListener("click", function() {
+                if (humans.length + numOfRobots === 2) return;
+                humans.pop();
+                updateHumans();
+              });
+              let addRobot = document.getElementById("addRobot");
+              addRobot.addEventListener("click", function() {
+                if (humans.length + numOfRobots === 10) return;
+                numOfRobots += 1;
+                robots = names.slice(0, numOfRobots);
+                updateRobots();
+              });
+              let removeRobot = document.getElementById("removeRobot");
+              removeRobot.addEventListener("click", function() {
+                if (humans.length + numOfRobots === 2) return;
+                numOfRobots -= 1;
+                robots = names.slice(0, numOfRobots);
+                updateRobots();
+              });
               updateHumans();
-            });
-            let removeHuman = document.getElementById("removeHuman");
-            removeHuman.addEventListener("click", function() {
-              if (humans.length + numOfRobots === 2) return;
-              humans.pop();
-              updateHumans();
-            });
-            let addRobot = document.getElementById("addRobot");
-            addRobot.addEventListener("click", function() {
-              if (humans.length + numOfRobots === 10) return;
-              numOfRobots += 1;
-              robots = names.slice(0, numOfRobots);
               updateRobots();
+              let startGame = document.getElementById("startGame");
+              startGame.style.display = "block";
+              let startGameButton = document.getElementById("startGameButton");
+              startGameButton.addEventListener("click", function() {
+                initGame({ humans, robots });
+              });
             });
-            let removeRobot = document.getElementById("removeRobot");
-            removeRobot.addEventListener("click", function() {
-              if (humans.length + numOfRobots === 2) return;
-              numOfRobots -= 1;
-              robots = names.slice(0, numOfRobots);
-              updateRobots();
-            });
-            updateHumans();
-            updateRobots();
-            let startGame = document.getElementById("startGame");
-            startGame.style.display = "block";
-            let startGameButton = document.getElementById("startGameButton");
-            startGameButton.addEventListener("click", function() {
-              initGame({ humans, robots });
-            });
-          });
-          // humansInput.addEventListener("input", function(e) {
-          //   let humans = +e.target.value;
-          //   let robots = +robotsInput.value;
-          //   if (humans + robots > 10) robots = 10 - humans;
-          //   robotsInput.value = robots;
-          // });
-          // robotsInput.addEventListener("input", function(e) {
-          //   let robots = +e.target.value;
-          //   let humans = +humansInput.value;
-          //   if (humans + robots > 10) humans = 10 - robots;
-          //   humansInput.value = humans;
-          // });
+          }
           // startGameButton.addEventListener("click", initCanAttack);
           // startGameButton.addEventListener("click", initContinents);
         })
@@ -1137,10 +1136,10 @@ function main(geo) {
 
   let showContinents = true; //false;
 
-  function initGame({ humans, robots }) {
-    console.log({ humans, robots });
+  function initGame(names, prevGame) {
+    let { humans, robots } = names;
     let gameLog = {
-      log: [],
+      log: prevGame ? prevGame.gameLog : [],
       update(x) {
         this.log.push(x);
         let gameLog = document.getElementById("gameLog");
@@ -1529,12 +1528,28 @@ function main(geo) {
           document.getElementById("ff2").style.color = "red";
       }
     });
-    currentPlayersTurn = Math.ceil(
-      Math.random() * (humans.length + robots.length - 1)
-    );
-    firstPlayer = currentPlayersTurn;
-    initPlayers().then(() => {
-      initPlayerTerritories();
+    let promise;
+
+    if (prevGame) {
+      players = prevGame.players;
+      currentPlayersTurn = prevGame.currentPlayersTurn;
+      firstPlayer = prevGame.firstPlayer;
+      phase = prevGame.phase - 1;
+      round = prevGame.round;
+      promise = new Promise(res => res());
+    } else {
+      currentPlayersTurn = Math.ceil(
+        Math.random() * (humans.length + robots.length - 1)
+      );
+      firstPlayer = currentPlayersTurn;
+      promise = new Promise(res => {
+        initPlayers().then(() => {
+          initPlayerTerritories();
+          res();
+        });
+      });
+    }
+    promise.then(() => {
       addCountryLabels();
       addContinentBorders().then(() => {
         drawCanAttackPaths();
@@ -1549,9 +1564,14 @@ function main(geo) {
             updateSummary();
             toggleGameDetails();
             setTimeout(() => {
-              nextPlayersTurn();
+              if (!prevGame) nextPlayersTurn();
               toggleGameDetails();
               showGameStuff();
+              if (prevGame) {
+                let player = players[currentPlayersTurn];
+                updateContainerAndText(player);
+                if (player.isComputer) doComputerPlayerTurn(player);
+              }
             }, 4000);
           });
         }, 500);
@@ -1694,7 +1714,23 @@ function main(geo) {
       }
     }
 
+    function gameChanged() {
+      localStorage.setItem(
+        "prevGame",
+        JSON.stringify({
+          players,
+          currentPlayersTurn,
+          firstPlayer,
+          phase,
+          round,
+          gameLog: gameLog.log
+        })
+      );
+    }
+
     function updateSummary() {
+      gameChanged();
+
       let headers = [
         "Players",
         "Total Forces",
@@ -1748,12 +1784,12 @@ function main(geo) {
 
     function updateContainerAndText(player) {
       let { forcesToPlace, name, image, color } = player;
-      nextPhaseButton.disabled = true;
-
-      if (forcesToPlace)
+      if (forcesToPlace && phase === 0) {
+        nextPhaseButton.disabled = true;
         document.getElementById(
           "placeTroops"
         ).innerHTML = `${forcesToPlace} left`;
+      }
 
       document.getElementById(
         "playersTurn"
@@ -1766,6 +1802,7 @@ function main(geo) {
       gameInstructions.style.background = `${color2}`;
       let container = document.getElementById("gameOuterContainer");
       container.style.border = `solid 10px ${color1}`;
+      document.getElementById("round").innerHTML = `Round: ${round}`;
     }
 
     function goToNextPhase() {
@@ -1779,6 +1816,7 @@ function main(geo) {
       currentPhase.innerHTML = "Current Phase: " + phases[phase];
       if (phase === 0)
         currentPhase.innerHTML += `<span id="placeTroops"></span>`;
+      gameChanged();
     }
     goToNextPhase();
     nextPhaseButton.addEventListener("click", function() {
@@ -2009,6 +2047,7 @@ function main(geo) {
         startNextTurn();
       }
       function startNextTurn() {
+        console.log("startNextTurn");
         battleOccurred = false;
         phase = -1;
         goToNextPhase();
@@ -2059,7 +2098,6 @@ function main(geo) {
 
       function incrementRound() {
         round += 1;
-        console.log({ round });
         document.getElementById("round").innerHTML = `Round: ${round}`;
       }
     }
@@ -2074,10 +2112,33 @@ function main(geo) {
       //if your position looks indefensible run away
       //if no good options make yourself not appealing to attack and attack the lowest bordering
       //country in order to get a card
-      placeComputerForces(player).then(() => {
-        goToNextPhase();
-        computerAttackPhase(player).then(() => {
-          goToNextPhase();
+      let place, attack;
+      if (phase === 0) {
+        place = new Promise(res => {
+          placeComputerForces(player).then(() => {
+            goToNextPhase();
+            res();
+          });
+        });
+        attack = new Promise(res => {
+          computerAttackPhase(player).then(() => {
+            goToNextPhase();
+            res();
+          });
+        });
+      } else {
+        place = new Promise(res => res());
+        if (phase > 1) attack = new Promise(res => res());
+        else
+          attack = new Promise(res => {
+            computerAttackPhase(player).then(() => {
+              goToNextPhase();
+              res();
+            });
+          });
+      }
+      place.then(() => {
+        attack.then(() => {
           computerMoveForces(player).then(() => {
             nextPlayersTurn();
           });
@@ -3260,6 +3321,7 @@ function main(geo) {
           ];
       });
       Promise.all(promises).then(res => {
+        localStorage.removeItem("prevGame");
         document.getElementById("startGame").style.display = "block";
         let gameInstructions = document.getElementById("gameInstructions");
         let gameDetails = document.getElementById("gameDetails");

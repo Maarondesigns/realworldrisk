@@ -9,7 +9,7 @@
   },
   {
     "id": "MEX",
-    "canAttack": ["USA", "GTM", "CUB", "BLZ"]
+    "canAttack": ["USA", "GTM", "BLZ"]
   },
   {
     "id": "BLZ",
@@ -41,7 +41,7 @@
   },
   {
     "id": "COL",
-    "canAttack": ["ECU", "PER", "BRA", "VEN", "DOM", "PAN"]
+    "canAttack": ["ECU", "PER", "BRA", "VEN", "PAN", "HTI"]
   },
   {
     "id": "ECU",
@@ -110,7 +110,7 @@
   },
   {
     "id": "DOM",
-    "canAttack": ["HTI", "VEN", "COL"]
+    "canAttack": ["HTI", "VEN"]
   },
   {
     "id": "HTI",
@@ -118,7 +118,7 @@
   },
   {
     "id": "CUB",
-    "canAttack": ["MEX", "USA", "HTI", "BHS"]
+    "canAttack": ["USA", "HTI", "BHS"]
   },
   {
     "id": "CAN",
@@ -142,7 +142,7 @@
   },
   {
     "id": "SWE",
-    "canAttack": ["NOR", "FIN", "DNK", "EST", "LVA", "DEU", "POL", "LTU"]
+    "canAttack": ["NOR", "FIN", "DNK"]
   },
   {
     "id": "FIN",
@@ -150,23 +150,23 @@
   },
   {
     "id": "EST",
-    "canAttack": ["SWE", "FIN", "RUS", "LVA"]
+    "canAttack": ["FIN", "RUS", "LVA"]
   },
   {
     "id": "LVA",
-    "canAttack": ["EST", "SWE", "RUS", "LTU", "BLR"]
+    "canAttack": ["EST", "RUS", "LTU", "BLR"]
   },
   {
     "id": "LTU",
-    "canAttack": ["LVA", "BLR", "SWE", "POL"]
+    "canAttack": ["LVA", "BLR", "POL"]
   },
   {
     "id": "POL",
-    "canAttack": ["SWE", "LTU", "BLR", "UKR", "SVK", "CZE", "DEU"]
+    "canAttack": ["LTU", "BLR", "UKR", "SVK", "CZE", "DEU"]
   },
   {
     "id": "DEU",
-    "canAttack": ["DNK", "NLD", "BEL", "FRA", "CHE", "AUT", "CZE", "POL", "SWE"]
+    "canAttack": ["DNK", "NLD", "BEL", "FRA", "CHE", "AUT", "CZE", "POL"]
   },
   {
     "id": "DNK",
@@ -242,7 +242,7 @@
   },
   {
     "id": "GRC",
-    "canAttack": ["ALB", "BGR", "EGY", "ITA", "LBY", "TUR", "MKD"]
+    "canAttack": ["ALB", "BGR", "ITA", "LBY", "TUR", "MKD"]
   },
   {
     "id": "SVN",
@@ -298,7 +298,7 @@
   },
   {
     "id": "YEM",
-    "canAttack": ["OMN", "SAU", "ERI", "SOM", "DJI"]
+    "canAttack": ["OMN", "SAU", "ERI", "DJI"]
   },
   {
     "id": "IRN",
@@ -445,11 +445,11 @@
   },
   {
     "id": "IDN",
-    "canAttack": ["MYS", "PHL", "AUS", "PNG", "TLS"]
+    "canAttack": ["MYS", "AUS", "PNG", "TLS"]
   },
   {
     "id": "PHL",
-    "canAttack": ["MYS", "IDN", "TWN"]
+    "canAttack": ["MYS", "TWN"]
   },
   {
     "id": "PNG",
@@ -477,7 +477,7 @@
   },
   {
     "id": "EGY",
-    "canAttack": ["JOR", "LBY", "SAU", "SDN", "ISR", "GRC"]
+    "canAttack": ["JOR", "LBY", "SAU", "SDN", "ISR"]
   },
   {
     "id": "LBY",
@@ -593,11 +593,11 @@
   },
   {
     "id": "ERI",
-    "canAttack": ["YEM", "SOM", "ETH", "SDN", "DJI"]
+    "canAttack": ["YEM", "ETH", "SDN", "DJI"]
   },
   {
     "id": "SOM",
-    "canAttack": ["YEM", "ERI", "ETH", "KEN", "DJI"]
+    "canAttack": ["ETH", "KEN", "DJI"]
   },
   {
     "id": "KEN",

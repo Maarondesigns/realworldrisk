@@ -537,11 +537,16 @@ function main(geo) {
     });
     canAttackPaths.forEach(x => {
       spinGlobe(0.02);
-      drawPath(x, {
-        id: `from-${x[0]}_to-${x[1]}`,
-        width: 1,
-        color: Cesium.Color.WHITE //new Cesium.Color(0.2, 0.2, 0.2)
-      });
+      drawPath(
+        x,
+        {
+          id: `from-${x[0]}_to-${x[1]}`,
+          width: 1,
+          color: Cesium.Color.WHITE //new Cesium.Color(0.2, 0.2, 0.2)
+        },
+        true,
+        { color: [1, 1, 1], outlineColor: [0, 0, 0] }
+      );
     });
   }
 
@@ -576,13 +581,37 @@ function main(geo) {
     viewer.scene.primitives.remove(path);
   }
 
-  function drawPath(ids, { id, color, width }) {
-    let positions = ids.map(x => {
+  function drawPath(ids, { id, color, width }, shortest, addPoints) {
+    let prevPoint;
+    let positions = ids.map((x, i) => {
+      let next = ids[i + 1];
       let country = countryData.find(y => y.id === x);
-      return Cesium.Cartesian3.fromDegrees(
-        +country.centroidLat,
-        +country.centroidLon
-      );
+      if (!shortest)
+        return Cesium.Cartesian3.fromDegrees(
+          +country.centroidLat,
+          +country.centroidLon
+        );
+      else {
+        let coords = countryCoords
+          .filter(y => y.id.split("_")[0] === x)
+          .map(y => y.coords.positions)
+          .reduce((a, b) => [...a, ...b], []);
+        let otherPoint;
+        if (next) {
+          let nextCountry = countryData.find(y => y.id === next);
+          otherPoint = Cesium.Cartesian3.fromDegrees(
+            +nextCountry.centroidLat,
+            +nextCountry.centroidLon
+          );
+        } else otherPoint = prevPoint;
+        let sorted = coords.sort((a, b) => {
+          let aD = Cesium.Cartesian3.distance(otherPoint, a),
+            bD = Cesium.Cartesian3.distance(otherPoint, b);
+          return aD - bD;
+        });
+        prevPoint = sorted[0];
+        return sorted[0];
+      }
     });
     let path = new Cesium.Primitive({
       releaseGeometryInstances: false,
@@ -603,6 +632,21 @@ function main(geo) {
       asynchronous: false
     });
     viewer.scene.primitives.add(path);
+    if (addPoints) {
+      positions.forEach((p, i) => {
+        viewer.entities.add({
+          id: id + "_point" + i,
+          position: p,
+          // heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+          point: new Cesium.PointGraphics({
+            pixelSize: 2,
+            color: Cesium.Color.WHITE,
+            outlineColor: Cesium.Color.BLACK,
+            outlineWidth: 1
+          })
+        });
+      });
+    }
   }
 
   function showPrimitive(id, continent) {
@@ -1139,7 +1183,7 @@ function main(geo) {
   function initGame(names, prevGame) {
     let { humans, robots } = names;
     let gameLog = {
-      log: prevGame ? prevGame.gameLog : [],
+      log: [],
       update(x) {
         this.log.push(x);
         let gameLog = document.getElementById("gameLog");
@@ -1528,7 +1572,8 @@ function main(geo) {
           document.getElementById("ff2").style.color = "red";
       }
     });
-    let promise;
+    let promise,
+      playersInitialized = false;
 
     if (prevGame) {
       players = prevGame.players;
@@ -1550,6 +1595,7 @@ function main(geo) {
       });
     }
     promise.then(() => {
+      playersInitialized = true;
       addCountryLabels();
       addContinentBorders().then(() => {
         drawCanAttackPaths();
@@ -1570,9 +1616,10 @@ function main(geo) {
               if (prevGame) {
                 let player = players[currentPlayersTurn];
                 updateContainerAndText(player);
-                if (player.isComputer){
+                if (player.isComputer) {
                   fastForwardButton.style.display = "block";
-                  doComputerPlayerTurn(player);}
+                  doComputerPlayerTurn(player);
+                }
               }
             }, 4000);
           });
@@ -1723,9 +1770,10 @@ function main(geo) {
           players,
           currentPlayersTurn,
           firstPlayer,
+          playerGetsACard,
+          battleOccurred,
           phase,
-          round,
-          gameLog: gameLog.log
+          round
         })
       );
     }
@@ -1818,7 +1866,7 @@ function main(geo) {
       currentPhase.innerHTML = "Current Phase: " + phases[phase];
       if (phase === 0)
         currentPhase.innerHTML += `<span id="placeTroops"></span>`;
-      saveGameInLocalStorage();
+      if (playersInitialized) saveGameInLocalStorage();
     }
     goToNextPhase();
     nextPhaseButton.addEventListener("click", function() {
@@ -2104,7 +2152,7 @@ function main(geo) {
     }
 
     function doComputerPlayerTurn(player) {
-      console.log('doComputerPlayerTurn',{phase})
+      console.log("doComputerPlayerTurn", { phase });
       nextPhaseButton.style.display = "none";
       //COMPUTER STRATEGY:
       //look for highest probability of getting a continent and try to get it without losing too many forces
@@ -2136,15 +2184,15 @@ function main(geo) {
           });
       }
 
-        stuff.then(() => {
-          computerMoveForces(player).then(() => {
-            nextPlayersTurn();
-          });
+      stuff.then(() => {
+        computerMoveForces(player).then(() => {
+          nextPlayersTurn();
         });
+      });
     }
 
     function placeComputerForces(player) {
-      console.log('placeComputerForces', player.forcesToPlace)
+      console.log("placeComputerForces", player.forcesToPlace);
       let canTrade = canTradeCards(player);
       if (canTrade) tradeInCards(player, canTrade);
       return new Promise(res => {
@@ -2298,8 +2346,8 @@ function main(geo) {
       //that have a lot of troops to attack into the continent with
     }
 
-    function computerAttackPhase(player) {      
-      console.log('computerAttackPhase', player)
+    function computerAttackPhase(player) {
+      console.log("computerAttackPhase", player);
       return new Promise(res => {
         let tryToGetCont = shouldTryToConquerContinent(player);
         let countries = tryToGetCont[0].Countries.filter(x =>
@@ -2523,6 +2571,7 @@ function main(geo) {
       e.id ? (id = e.id.split("_")[0]) : (id = e.split("_")[0]);
       // console.log(id);
       let player = players.find(p => p.territory.find(t => t.name === id));
+      if (!player) return;
       if (selectedCountry1) {
         selectedCountry2 = id;
         if (
@@ -2749,21 +2798,27 @@ function main(geo) {
           function doStuff(t) {
             let shouldAttack = ids[i + 1];
             if (shouldAttack) {
-              setTimeout(() => {
-                if (!fastForward) selectEntity(t);
-                selectedCountry1 = t;
-                selectedCountry2 = shouldAttack;
-                battle(t, shouldAttack, false, true).then(winner => {
-                  updateMap([ids[i], ...getCanAttack(ids[i])]);
-                  let success = winner.role === "aggressor";
-                  i += 1;
-                  if (success && getForces(shouldAttack) > 1 && ids[i]) {
-                    setTimeout(() => {
-                      doStuff(ids[i]);
-                    }, 300);
-                  } else res();
-                });
-              }, 600);
+              setTimeout(
+                () => {
+                  if (!fastForward) selectEntity(t);
+                  selectedCountry1 = t;
+                  selectedCountry2 = shouldAttack;
+                  battle(t, shouldAttack, false, true).then(winner => {
+                    updateMap([ids[i], ...getCanAttack(ids[i])]);
+                    let success = winner.role === "aggressor";
+                    i += 1;
+                    if (success && getForces(shouldAttack) > 1 && ids[i]) {
+                      setTimeout(
+                        () => {
+                          doStuff(ids[i]);
+                        },
+                        fastForward === 2 ? 30 : 300
+                      );
+                    } else res();
+                  });
+                },
+                fastForward === 2 ? 60 : 600
+              );
             } else {
               res(false);
             }

@@ -1,4 +1,4 @@
-(continents = [
+[
   {
     "Name": "North America",
     "Countries": [
@@ -198,4 +198,4 @@
     ],
     "Color": [0.3, 0.3, 0.3]
   }
-])
+]

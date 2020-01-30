@@ -1,4 +1,4 @@
-(countriesCanAttack = [
+[
   {
     "id": "USA",
     "canAttack": ["CAN", "MEX", "CUB", "RUS", "BHS"]
@@ -695,4 +695,4 @@
     "id": "MNE",
     "canAttack": ["BIH", "ALB", "HRV", "SRB"]
   }
-])
+]

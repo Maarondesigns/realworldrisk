@@ -25,8 +25,12 @@ if (window.location.hostname !== "localhost")
     dsn: "https://cd57a268a543414baa6015f2c0677939@sentry.io/1965024"
   });
 
-function main(geo) {
-  // console.log(geo);
+function main({
+  countryData,
+  countriesCanAttack,
+  continents,
+  countryGeometries
+}) {
   Cesium.Ion.defaultAccessToken =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI5ZGFjODY4OC04NjVlLTQ0MTEtYTEzYy1iZWI4ODdhZjM0OTciLCJpZCI6MTY3NTUsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1NzExNTI1MjN9.3rBWB6NySV4EUyawEX3k3WBPLCxg-ii3kyhKNWrzKPU";
 
@@ -272,7 +276,7 @@ function main(geo) {
     if (sourceType === "czml") {
       loadPromise = Cesium.CzmlDataSource.load(source);
     } else if (sourceType === "geojson") {
-      // loadPromise = Cesium.GeoJsonDataSource.load(geo, options);
+      // loadPromise = Cesium.GeoJsonDataSource.load(countryGeometries, options);
       loadPromise = Cesium.GeoJsonDataSource.load(source, options);
       // loadPromise2 = Cesium.GeoJsonDataSource.load(source, options);
     } else if (sourceType === "kml") {
@@ -3626,19 +3630,49 @@ function main(geo) {
   loadingIndicator.style.display = "none";
 }
 
-// d3.json("../data/world-NE-10m-1p5.json").then(areas => {
-d3.json("data/continentGeometries.json").then(areas => {
-  // console.log(areas)
-  // const keys = Object.keys(areas.objects);
-  const geo = areas; // topojson.feature(areas, areas.objects[keys[0]]);
-
-  geo.features = geo.features
-    .filter(x => x.geometry)
-    .map((k, i) => {
-      // console.log(k);
-      var scaledK = turf.transformScale(k, 0.995);
-      scaledK.id = scaledK.properties.CONTINENT;
-      return scaledK;
+let paths = [
+  { countryData: "data/countryData.json" },
+  { countriesCanAttack: "data/canAttack.json" },
+  { continents: "data/continents.json" }//,
+ // { continentGeometries: "data/continentGeometries.json" }
+];
+let data = {};
+paths.forEach(x => {
+  Object.keys(x).forEach(k => {
+    d3.json(x[k]).then(d => {
+      data[k] = d;
+    }).catch(err=>{
+      console.log(err)
     });
-  main(geo);
+  });
 });
+let interval = setInterval(() => {
+  // console.log(data);
+  if (
+    data["countryData"] &&
+    data["countriesCanAttack"] &&
+    data["continents"] //&&
+    //data["continentGeometries"]
+  ) {
+    clearInterval(interval);
+    main(data);
+  }
+}, 10);
+
+
+// d3.json("../data/world-NE-10m-1p5.json").then(areas => {
+//d3.json("https://raw.githubusercontent.com/Maarondesigns/realworldrisk/master/data/continentGeometries.json").then(areas => {
+// console.log(areas)
+// const keys = Object.keys(areas.objects);
+// const geo = areas; // topojson.feature(areas, areas.objects[keys[0]]);
+
+// geo.features = geo.features
+//   .filter(x => x.geometry)
+//   .map((k, i) => {
+//     // console.log(k);
+//     var scaledK = turf.transformScale(k, 0.995);
+//     scaledK.id = scaledK.properties.CONTINENT;
+//     return scaledK;
+//   });
+// main(geo);
+//   });

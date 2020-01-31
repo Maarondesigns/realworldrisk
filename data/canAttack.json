@@ -190,7 +190,7 @@
   },
   {
     "id": "ESP",
-    "canAttack": ["FRA", "PRT", "MAR", "DZA"]
+    "canAttack": ["FRA", "PRT", "MAR"]
   },
   {
     "id": "PRT",
@@ -198,7 +198,7 @@
   },
   {
     "id": "ITA",
-    "canAttack": ["ALB", "AUT", "CHE", "FRA", "GRC", "HRV", "TUN", "SVN"]
+    "canAttack": ["ALB", "AUT", "CHE", "FRA", "TUN", "SVN"]
   },
   {
     "id": "CHE",
@@ -222,7 +222,7 @@
   },
   {
     "id": "HRV",
-    "canAttack": ["BIH", "HUN", "ITA", "MNE", "SRB", "SVN"]
+    "canAttack": ["BIH", "HUN", "MNE", "SRB", "SVN"]
   },
   {
     "id": "BIH",
@@ -242,7 +242,7 @@
   },
   {
     "id": "GRC",
-    "canAttack": ["ALB", "BGR", "ITA", "LBY", "TUR", "MKD"]
+    "canAttack": ["ALB", "BGR", "LBY", "TUR", "MKD"]
   },
   {
     "id": "SVN",
@@ -489,7 +489,7 @@
   },
   {
     "id": "DZA",
-    "canAttack": ["ESP", "MAR", "TUN", "LBY", "NER", "MLI", "MRT", "ESH"]
+    "canAttack": ["MAR", "TUN", "LBY", "NER", "MLI", "MRT", "ESH"]
   },
   {
     "id": "MAR",

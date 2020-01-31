@@ -1192,14 +1192,16 @@ function main({
         this.log.push(x);
         let gameLog = document.getElementById("gameLog");
         let c = integerToRGB(x.player.color);
-        gameLog.innerHTML += `<div><div style="border-color:${c};">${x.text}</div></div>`;
-        gameLog.scrollTo({
-          top: [...gameLog.childNodes]
-            .map(x => x.getBoundingClientRect().height)
-            .reduce((a, b) => a + b, 0),
-          left: 0,
-          behavior: "smooth"
-        });
+        gameLog.innerHTML =
+          `<div><div style="border-color:${c};">${x.text}</div></div>` +
+          gameLog.innerHTML;
+        // gameLog.scrollTo({
+        //   top: [...gameLog.childNodes]
+        //     .map(x => x.getBoundingClientRect().height)
+        //     .reduce((a, b) => a + b, 0),
+        //   left: 0,
+        //   behavior: "smooth"
+        // });
       }
     };
     document.getElementById("startGame").style.display = "none";
@@ -1262,7 +1264,7 @@ function main({
     }
 
     function showAlert(text, player) {
-      gameLog.update({ player, text });
+      if (player) gameLog.update({ player, text });
       return new Promise(res => {
         if (fastForward === 2) {
           res(true);
@@ -1272,7 +1274,7 @@ function main({
         alertBox.classList.remove("fade-out");
         alertBox.classList.add("fade-in");
         alertBox.style.display = "block";
-        alertBox.style.borderColor = integerToRGB(player.color);
+        if (player) alertBox.style.borderColor = integerToRGB(player.color);
         alertBox.innerHTML = text;
         function hideAlertBox() {
           alertBox.classList.remove("fade-in");
@@ -1544,7 +1546,7 @@ function main({
     //game global variables
     let currentPlayersTurn,
       firstPlayer,
-      playerGetsACard,
+      playerGetsACard = prevGame ? prevGame.playerGetsACard : false,
       phases = ["Place Troops", "Attack", "Move Forces"],
       phase = -1,
       cards = ["Infantry", "Cavalry", "Artillery"],
@@ -1556,7 +1558,7 @@ function main({
       round = 0,
       gameHasStarted,
       fastForward = 0,
-      battleOccurred;
+      battleOccurred = prevGame ? prevGame.battleOccurred : false;
 
     let nextPhaseButton = document.getElementById("nextPhase");
     let turnOverButton = document.getElementById("turnOver");
@@ -1569,6 +1571,15 @@ function main({
         document.getElementById("ff1").style.color = "black";
         document.getElementById("ff2").style.color = "black";
       } else {
+        if (!fastForward && isDoingMAC) {
+          let pitch = -2 * Math.PI;
+          if (scene.mode === 1) pitch = -1;
+          flyToCountries({
+            ids: isDoingMAC,
+            pitch,
+            range: 0
+          });
+        }
         fastForward += 1;
         fastForwardButton.classList.add("pulse");
         document.getElementById("ff1").style.color = "red";
@@ -2196,7 +2207,7 @@ function main({
     }
 
     function placeComputerForces(player) {
-      console.log("placeComputerForces", player.forcesToPlace);
+      // console.log("placeComputerForces", player.forcesToPlace);
       let canTrade = canTradeCards(player);
       if (canTrade) tradeInCards(player, canTrade);
       return new Promise(res => {
@@ -2351,7 +2362,7 @@ function main({
     }
 
     function computerAttackPhase(player) {
-      console.log("computerAttackPhase", player);
+      // console.log("computerAttackPhase", player);
       return new Promise(res => {
         let tryToGetCont = shouldTryToConquerContinent(player);
         let countries = tryToGetCont[0].Countries.filter(x =>
@@ -2633,15 +2644,16 @@ function main({
           humanPlaceForces(id, player);
         } else {
           if (player.territory.find(x => x.name === id).forces < 2) {
-            if (phase === 1) alert(`You need at least 2 forces to attack.`);
-            else if (phase === 2) alert(`No forces to move.`);
+            if (phase === 1) showAlert(`You need at least 2 forces to attack.`);
+            else if (phase === 2) showAlert(`No forces to move.`);
             return;
           }
           if (phase === 1) {
             canAttack = getCanAttack(id, player);
             if (!canAttack.length) {
-              alert("You can't attack anyone from here.");
+              showAlert("You can't attack anyone from here.");
               deselectEntities();
+              return;
             } else {
               setCanAttackCountryColors(id, canAttack);
               if (!isDoingMAC && !players[currentPlayersTurn].isComputer) {
@@ -2795,7 +2807,7 @@ function main({
     }
 
     function initMultiCountryAssault(ids) {
-      isDoingMAC = true;
+      isDoingMAC = ids;
       let i = 0;
       function tryAttack(t) {
         return new Promise(res => {
@@ -2811,6 +2823,15 @@ function main({
                     updateMap([ids[i], ...getCanAttack(ids[i])]);
                     let success = winner.role === "aggressor";
                     i += 1;
+                    if ((i === ids.length || !success) && fastForward) {
+                      let pitch = -2 * Math.PI;
+                      if (scene.mode === 1) pitch = -1;
+                      flyToCountries({
+                        ids: [success ? shouldAttack : t],
+                        pitch,
+                        range: 0 //5000000
+                      });
+                    }
                     if (success && getForces(shouldAttack) > 1 && ids[i]) {
                       setTimeout(
                         () => {
@@ -2866,6 +2887,7 @@ function main({
         if (fastForward) return;
         let battleHeader1 = document.getElementById("battleHeader1");
         let battleHeader2 = document.getElementById("battleHeader2");
+        if (!battleHeader1 || !battleHeader2) return;
         battleHeader1.innerHTML = `<div>${aC}</div><div>${getForces(
           aggressor
         )}</div>`;
@@ -2961,8 +2983,8 @@ function main({
         let dDice = rollDice(
           getForces(defender) > 2 ? 2 : getForces(defender)
         ).sort((a, b) => b - a);
+        let battleDetails = document.getElementById("battleDetails");
         if (!isComputer && !fastForward) {
-          let battleDetails = document.getElementById("battleDetails");
           if (battleDetails) {
             battleDetails.innerHTML = "";
             battleDetails.innerHTML = `
@@ -3009,18 +3031,16 @@ function main({
           winner = diceRoll2.winner;
           diceRoll2.lost === "a" ? (aLostCount += 1) : (dLostCount += 1);
         }
-        if (!fastForward) updateMap([aggressor, defender]);
+        if (!fastForward || !winner) updateMap([aggressor, defender]);
         return new Promise(res => {
-          if (!isComputer && !fastForward) {
-            if (aLostCount)
-              document.getElementById(
-                "aLostCount"
-              ).innerHTML = `-${aLostCount}`;
-            if (dLostCount)
-              document.getElementById(
-                "dLostCount"
-              ).innerHTML = `-${dLostCount}`;
-          }
+            if (aLostCount) {
+              let el = document.getElementById("aLostCount");
+              if (el) el.innerHTML = `-${aLostCount}`;
+            }
+            if (dLostCount) {
+              let el = document.getElementById("dLostCount");
+              if (el) el.innerHTML = `-${dLostCount}`;
+            }          
           setTimeout(
             () => {
               if (winner) {
@@ -3040,7 +3060,7 @@ function main({
                       text
                     });
 
-                    if (!isComputer && !fastForward) {
+                    if (battleDetails) {
                       battleDetails.style.display = "block";
                       battleDetails.innerHTML = `<div>${winner.name} wins!</div>`;
                     }
@@ -3050,7 +3070,7 @@ function main({
                     } else if (role === "aggressor") {
                       playerGetsACard = true;
                       //set territory
-                      if (!isComputer && !fastForward)
+                      if (battleDetails)
                         battleDetails.innerHTML += `<div>${dC} now belongs to ${players[currentPlayersTurn].name}</div>`;
                       let loser = players.find(p =>
                         p.territory.find(t => t.name === defender)
@@ -3256,6 +3276,7 @@ function main({
       moveTroopsChanged(min);
 
       moveTroopsButton.addEventListener("click", function() {
+        if (moveTroopsQueue.length) return;
         let text = `Moved ${final} troops from ${a} to ${d}`;
         gameLog.update({ player: players[currentPlayersTurn], text });
         clearInterval(interval);
@@ -3633,17 +3654,19 @@ function main({
 let paths = [
   { countryData: "data/countryData.json" },
   { countriesCanAttack: "data/canAttack.json" },
-  { continents: "data/continents.json" }//,
- // { continentGeometries: "data/continentGeometries.json" }
+  { continents: "data/continents.json" } //,
+  // { continentGeometries: "data/continentGeometries.json" }
 ];
 let data = {};
 paths.forEach(x => {
   Object.keys(x).forEach(k => {
-    d3.json(x[k]).then(d => {
-      data[k] = d;
-    }).catch(err=>{
-      console.log(err)
-    });
+    d3.json(x[k])
+      .then(d => {
+        data[k] = d;
+      })
+      .catch(err => {
+        console.log(err);
+      });
   });
 });
 let interval = setInterval(() => {
@@ -3658,7 +3681,6 @@ let interval = setInterval(() => {
     main(data);
   }
 }, 10);
-
 
 // d3.json("../data/world-NE-10m-1p5.json").then(areas => {
 //d3.json("https://raw.githubusercontent.com/Maarondesigns/realworldrisk/master/data/continentGeometries.json").then(areas => {

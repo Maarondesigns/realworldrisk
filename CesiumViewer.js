@@ -1275,7 +1275,7 @@ function main({
       // });
     }
 
-    function showAlert(text, player) {
+    function showAlert(text, player, duration = 10000) {
       if (player) gameLog.update({ player, text });
       return new Promise(res => {
         if (fastForward === 2) {
@@ -1297,56 +1297,13 @@ function main({
             res(true);
           }, 650);
         }
-        let timeout = setTimeout(hideAlertBox, fastForward ? 1500 : 10000);
+        let timeout = setTimeout(hideAlertBox, fastForward ? 1500 : duration);
         alertBox.addEventListener("click", function() {
           clearTimeout(timeout);
           hideAlertBox();
         });
       });
     }
-
-    // players = [
-    //   {
-    //     name: "Player 1",
-    //     color: [1, 1, 0],
-    //     territory: [],
-    //     image: "Images/user.png",
-    //     cards: ["Artillery", "Artillery", "Cavalry", "Infantry"],
-    //     continents: []
-    //   },
-    //   {
-    //     name: "Player 2",
-    //     color: [0, 1, 0],
-    //     territory: [],
-    //     image: "Images/user.png",
-    //     cards: [],
-    //     continents: []
-    //   } ,
-    // {
-    //   name: "Player 3",
-    //   color: [0.78, 0.58, 0.3],
-    //   territory: [],
-    //   image: "Images/user.png",
-    //   cards: [],
-    //   continents: []
-    // },
-    // {
-    //   name: "Player 4",
-    //   color: [0, 1, 1],
-    //   territory: [],
-    //   image: "Images/user.png",
-    //   cards: [],
-    //   continents: []
-    // },
-    // {
-    //   name: "Player 5",
-    //   color: [0.63, 0.3, 0.78],
-    //   territory: [],
-    //   image: "Images/user.png",
-    //   cards: [],
-    //   continents: []
-    // }
-    //];
 
     function shuffle(a) {
       for (let i = a.length - 1; i > 0; i--) {
@@ -1956,7 +1913,7 @@ function main({
     function calcForcesFromContinent(name) {
       let continent = continents.find(x => x.Name === name);
       if (!continent || !continent.Countries) return 0;
-      console.log(name, Math.ceil(continent.Countries.length / 4));
+      // console.log(name, Math.ceil(continent.Countries.length / 4));
       return Math.ceil(continent.Countries.length / 4);
     }
 
@@ -2038,7 +1995,9 @@ function main({
       viewCards.style.display = "none";
       updatePlayersCards();
       let text = `Got ${f} troops for trading cards.`;
-      if (player.isComputer) showAlert(text, player);
+      let duration;
+      if (player.isComputer) duration = 2500;
+      if (player.isComputer) showAlert(text, player, duration);
       else gameLog.update({ player, text });
     }
 
@@ -2094,7 +2053,6 @@ function main({
 
             setTimeout(() => {
               let interval = setInterval(() => {
-                console.log(i);
                 let thisCard = document.getElementById("newCard_" + i);
                 if (css[i].currentStep >= css[i].steps) {
                   clearInterval(interval);
@@ -2152,7 +2110,6 @@ function main({
         startNextTurn();
       }
       function startNextTurn() {
-        console.log("startNextTurn");
         battleOccurred = false;
         phase = -1;
         goToNextPhase();
@@ -2166,6 +2123,7 @@ function main({
         let firstAlivePlayer = players.findIndex(p => p.territory.length);
         if (currentPlayersTurn === firstAlivePlayer) incrementRound();
         let player = players[currentPlayersTurn];
+        console.log(`_____________________${player.name}_________________________`);
         if (player.isComputer) {
           fastForwardButton.style.display = "block";
         } else {
@@ -2208,7 +2166,6 @@ function main({
     }
 
     function doComputerPlayerTurn(player) {
-      console.log("doComputerPlayerTurn", { phase });
       nextPhaseButton.style.display = "none";
       //COMPUTER STRATEGY:
       //look for highest probability of getting a continent and try to get it without losing too many forces
@@ -2250,7 +2207,6 @@ function main({
     function placeComputerForces(player) {
       // console.log("placeComputerForces", player.forcesToPlace);
       let canTrade = canTradeCards(player);
-      console.log(player, canTrade);
       if (canTrade) tradeInCards(player, canTrade);
       return new Promise(res => {
         let alreadyReinforced = [];
@@ -2262,37 +2218,40 @@ function main({
             let tryToGetCont = shouldTryToConquerContinent(player);
             let shouldReinforce = shouldReinforceContinent(
               player,
-              !tryToGetCont[0] || !+tryToGetCont[0].percent
+              !tryToGetCont.length
             );
+            console.log("place",{forcesToPlace:player.forcesToPlace}, { tryToGetCont, shouldReinforce });
             let id, amount;
             if (shouldReinforce.length) {
               id = shouldReinforce[0].country;
               amount = shouldReinforce[0].amount;
-              // gameLog.update({ player, text: `Should reinforce ${id}` });
-              // console.log(`Should reinforce ${id}`);
+               console.log(`Reinforcing ${id} with ${amount} to defend `);
             } else {
-              let countries = tryToGetCont[0].Countries.filter(x =>
-                player.territory.find(y => y.name === x)
-              )
-                .filter(x => getCanAttack(x, player).length)
-                .filter(x => !alreadyReinforced.find(y => y === x));
-              countries
+              let filter = tryToGetCont.filter(
+                x => !alreadyReinforced.find(y => y === x.name)
+              );
+              if (filter.length) tryToGetCont = filter;
+              tryToGetCont
                 .map(x => x)
                 .forEach(c => {
-                  let ca = getCanAttack(c, player);
+                  let ca = getCanAttack(c.name, player);
                   ca.filter(x =>
                     player.territory.find(y => y.name === x)
                   ).forEach(x => {
-                    if (countries.indexOf(x) === -1) countries.push(x);
+                    if (countries.indexOf(x) === -1)
+                      countries.push({ name: x });
                   });
                 });
-              id = countries[Math.floor(Math.random() * countries.length)];
-              amount = Math.round(player.forcesToPlace / countries.length);
-              alreadyReinforced.push(id);
-              // gameLog.update({
-              //   player,
-              //   text: `Should try to conquer ${tryToGetCont[0].Name} by reinforcing ${id}`
-              // });
+              // console.log(tryToGetCont);
+              let chosen =
+                tryToGetCont[Math.floor(Math.random() * tryToGetCont.length)];
+              // console.log(chosen);
+              // id = tryToGetCont[Math.floor(Math.random() * tryToGetCont.length)];
+              // amount = Math.round(player.forcesToPlace / countries.length);
+              id = chosen.name;
+              amount = chosen.amount;
+              alreadyReinforced.push(id);              
+              console.log(`Reinforcing ${id} with ${amount} to attack `);
             }
             if (amount > player.forcesToPlace) amount = player.forcesToPlace;
             if (amount < 1 && player.forcesToPlace) amount = 1;
@@ -2392,43 +2351,112 @@ function main({
       //   "forces:",
       //   byForces.map(x => `${x.Name}: ${x.percent}`)
       // );
-      if (byTerritory[0].Name === byForces[0].Name) return byTerritory;
+      // console.log("byTerritory: ",byTerritory.map(x=>x.Name),"byForces: ",byForces.map(x=>x.Name))
+      let sortedContinents;
+      if (byTerritory[0].Name === byForces[0].Name)
+        sortedContinents = byTerritory;
       else {
         let territory1v2 = byTerritory[0].percent / byTerritory[1].percent;
         let forces1v2 = byForces[0].percent / byForces[1].percent;
-        if (territory1v2 > forces1v2) return byTerritory;
-        else return byForces;
+        if (territory1v2 > forces1v2) sortedContinents = byTerritory;
+        else sortedContinents = byForces;
       }
+      // console.log(sortedContinents)
+      if (!sortedContinents[0] || !+sortedContinents[0].percent) {
+        return [];
+      }
+      function getCountries(continent) {
+        return continent.Countries.filter(x =>
+          player.territory.find(y => y.name === x)
+        )
+          .filter(
+            x =>
+              getCanAttack(x, player).filter(
+                y => continent.Countries.indexOf(y) !== -1
+              ).length
+          )
+          .map(x => {
+            let bordersWithinCont = getCanAttack(x, player).filter(
+              y => continent.Countries.indexOf(y) !== -1
+            );
+            //other territories owned by this player that are adjacent to any of bordersWithinCont
+            let alsoBorders = bordersWithinCont
+              .map(y =>
+                getCanAttack(y).filter(z =>
+                  player.territory.find(t => t.name === z && t.name !== x)
+                )
+              )
+              .reduce((a, b) => [...a, ...b], []);
+
+            // console.log(x, bordersWithinCont, alsoBorders);
+            let canAttackAmount = bordersWithinCont
+              .map(y => getForces(y))
+              .reduce((a, b) => a + b);
+            let alsoBordersAmount = alsoBorders.length
+              ? alsoBorders.map(y => getForces(y)).reduce((a, b) => a + b)
+              : 0;
+            let amount = canAttackAmount - alsoBordersAmount;
+            return { name: x, amount };
+          })
+          .sort((a, b) => b.amount - a.amount);
+      }
+      let countries = getCountries(sortedContinents[0]);
+      let filter = countries.filter(x => x.amount > -1);
+      // console.log({ phase });
+      // console.log(
+      //   countries.map(x => `${x.name}:${x.amount}`),
+      //   filter.map(x => `${x.name}:${x.amount}`)
+      // );
+      if (!filter.length) {
+        let continent2 = getCountries(sortedContinents[1]).filter(
+          x => x.amount > 0
+        );
+        if (phase === 1) return [countries[0], ...continent2];
+        else return continent2;
+      } else return filter;
       //this doesn't take into account adjacent, or near adjacent territories
       //that have a lot of troops to attack into the continent with
+    }
+
+    function shouldMoveTroopsAfterBattle(territory, player) {
+      let ca = getCanAttack(territory.name, player);
+      let f = territory.forces;
+      // console.log(territory.name, f, ca);
+      if (!ca.length) return f - 1;
+      else {
+        let sum = ca.map(x => getForces(x)).reduce((a, b) => a + b, 0);
+        // console.log(sum);
+        return f - sum < 2 ? 2 : f - sum;
+      }
     }
 
     function computerAttackPhase(player) {
       // console.log("computerAttackPhase", player);
       return new Promise(res => {
-        let tryToGetCont = shouldTryToConquerContinent(player);
-        let countries = tryToGetCont[0].Countries.filter(x =>
-          player.territory.find(y => y.name === x)
-        );
-        if (!countries.length)
-          countries = shouldReinforceContinent(
-            player,
-            !tryToGetCont[0] || !+tryToGetCont[0].percent
-          ).map(x => x.country);
+        let countries = shouldTryToConquerContinent(player).map(x => x.name);
+        console.log("attack continent", countries);
+        if (!countries.length) {
+          countries = shouldReinforceContinent(player, true).map(
+            x => x.country
+          );
+          console.log("reinforce continent", countries);
+        }
         countries
           .map(x => x)
           .forEach(c => {
             let ca = getCanAttack(c, player);
             ca.filter(x => player.territory.find(y => y.name === x)).forEach(
               x => {
+                console.log(x);
                 if (countries.indexOf(x) === -1) countries.push(x);
               }
             );
           });
         let ts = player.territory.filter(
-          x => countries.indexOf(x.name) !== -1 && x.forces > 3
+          x => countries.indexOf(x.name) !== -1 && x.forces > 2
         );
         if (ts.length) {
+          ts.sort((a, b) => b.forces - a.forces);
           function tryAttack(t) {
             return new Promise(res => {
               function doStuff(t) {
@@ -2443,10 +2471,6 @@ function main({
                     return caP.name !== player.name && caT.forces < t.forces;
                   });
                 if (shouldAttack) {
-                  // gameLog.update({
-                  //   player,
-                  //   text: `Should try to conquer ${tryToGetCont[0].Name} by attacking ${shouldAttack}`
-                  // });
                   // console.log(
                   //   `Should try to conquer ${tryToGetCont[0].Name} by attacking ${shouldAttack}`
                   // );
@@ -2457,31 +2481,26 @@ function main({
                   }
                   setTimeout(() => {
                     battle(t.name, shouldAttack, true).then(winner => {
-                      // let id = getIDFromName(winner.name);
-                      // let color = integerToRGB(getPlayerColor(id));
-                      // // setTimeout(() => {
                       let success = winner.role === "aggressor";
-                      // let text = success
-                      //   ? `<span style="color:${color};">${winner.name}'s</span> attack was successful`
-                      //   : `<span style="color:${color};">${winner.name}</span> successfully defended it's territory.`;
-                      // gameLog.update({ player, text });
-                      if (success && getForces(shouldAttack) > 3) {
-                        // gameLog.update({
-                        //   player,
-                        //   text: `Continue attacking with ${shouldAttack}`
-                        // });
+                      let f = 0,
+                        n = shouldAttack;
+                      if (success) {
+                        f = getForces(shouldAttack);
+                        // console.log(f, n);
+                        if (f <= 3) {
+                          f = getForces(t.name);
+                          n = t.name;
+                        }
+                        // console.log(f, n);
+                      }
+                      if (success && f > 3) {
                         setTimeout(
                           () => {
-                            doStuff(
-                              player.territory.find(
-                                x => x.name === shouldAttack
-                              )
-                            );
+                            doStuff(player.territory.find(x => x.name === n));
                           },
                           fastForward ? (fastForward === 2 ? 0 : 100) : 300
                         );
                       } else res(winner);
-                      // }, 1500);
                     });
                   }, duration);
                 } else {
@@ -2510,71 +2529,139 @@ function main({
       });
     }
 
+    function hasExtraTroops(t, player) {
+      let f = getForces(t);
+      let borders = getCanAttack(t, player)
+        .map(x => getForces(x))
+        .reduce((a, b) => a + b, 0);
+      let extra = f - 1 - borders;
+      return extra > 0 ? extra : 0;
+    }
+
     function computerMoveForces(player) {
-      let ts = player.territory.filter(
-          x => !getCanAttack(x.name, player).length
-        ),
-        a,
-        d,
-        move;
-      if (ts.length) {
-        ts.sort((a, b) => b.forces - a.forces);
-        a = ts[0].name;
-        canMoveTo = calcCanMoveTo(
+      //this only moves forces from countries that can't attack
+      //should first find largest troop counts and see if some of them could be moved more strategically
+      //then compare that with largest troop count that can't attack
+      let sortedTerritory = player.territory
+        .map(t => {
+          return { name: t.name, extra: hasExtraTroops(t.name, player) };
+        })
+        .sort((a, b) => b.extra - a.extra);
+
+      // let ts = player.territory.filter(
+      //     x => !getCanAttack(x.name, player).length
+      //   ),
+      let a = sortedTerritory[0].name,
+        cmt = calcCanMoveTo(
           a,
           player.territory.map(t => t.name)
+        ),
+        move = sortedTerritory[0].extra,
+        d = cmt.find(x => getCanAttack(x, player).length);
+      console.log(sortedTerritory, cmt);
+      console.log(`Pre-calc: should move ${move} from ${a} to ${d}`);
+      let tryToGetCont = shouldTryToConquerContinent(player).map(x => x.name);
+
+      let shouldReinforce = shouldReinforceContinent(
+        player,
+        !tryToGetCont.length
+      );
+      console.log({ shouldReinforce, tryToGetCont });
+      if (shouldReinforce.length) {
+        let { country, amount } = shouldReinforce[0];
+        cmt = calcCanMoveTo(
+          country,
+          player.territory.map(t => t.name)
         );
-        move = ts[0].forces - 1;
-        d = canMoveTo.find(x => getCanAttack(x, player).length);
-        let tryToGetCont = shouldTryToConquerContinent(player);
-        let shouldReinforce = shouldReinforceContinent(
-          player,
-          !tryToGetCont[0] || !+tryToGetCont[0].percent
-        );
-        if (shouldReinforce.length) {
-          let { country, amount } = shouldReinforce[0];
-          if (canMoveTo.indexOf(country) !== -1) {
-            d = country;
-            if (amount + 1 < move) move = amount + 1;
-            console.log(
-              `Should reinforce ${country} by moving ${move} troops from ${a} to ${d}`
-            );
-          }
-        } else if (tryToGetCont.length) {
-          let countries = tryToGetCont[0].Countries.filter(x =>
-            player.territory.find(y => y.name === x)
-          );
-          countries
-            .map(x => x)
-            .forEach(c => {
-              let ca = getCanAttack(c, player);
-              ca.filter(x => player.territory.find(y => y.name === x)).forEach(
-                x => {
-                  if (countries.indexOf(x) === -1) countries.push(x);
-                }
-              );
-            });
-          if (countries.length)
-            d = countries[Math.floor(Math.random() * countries.length)];
+        //find first index that can move from
+        let index = sortedTerritory.findIndex(t => cmt.find(c => c === t.name));
+        //compare index extra to move with country with most extra
+        if (index.extra > sortedTerritory[0].extra / 2) {
+          d = country;
+          move = index.extra;
           console.log(
-            `Should try to conquer ${tryToGetCont[0].Name} by moving ${move} troops from ${a} to ${d}`
+            `Will reinforce ${country} by moving ${move} troops from ${a} to ${d}`
+          );
+        } else {
+          //find best country to move extra to
+          console.log(
+            "Should find best country to move extra to",
+            sortedTerritory[0],
+            tryToGetCont
           );
         }
+      } else if (tryToGetCont.length) {
+        tryToGetCont
+          .map(x => x)
+          .forEach(c => {
+            //add in countries not within the continent
+            let ca = getCanAttack(c, player);
+            ca.filter(x => player.territory.find(y => y.name === x)).forEach(
+              x => {
+                if (!tryToGetCont.find(y => y === x)) tryToGetCont.push(x);
+              }
+            );
+          });
+        if (tryToGetCont.length) {
+          d = cmt.find(c => tryToGetCont.indexOf(c) !== -1);
+          if (!d) {
+            console.log("Re-calculating d");
+            d = tryToGetCont.find(
+              x =>
+                calcCanMoveTo(
+                  x,
+                  player.territory.map(t => t.name)
+                ).length
+            );
+            console.log({ d });
+            if (d) {
+              cmt = calcCanMoveTo(
+                d,
+                player.territory.map(t => t.name)
+              );
+              let newT = cmt
+                .map(t => {
+                  return { name: t, extra: hasExtraTroops(t, player) };
+                })
+                .sort((a, b) => b.extra - a.extra);
+              if (cmt.indexOf(a) === -1) a = newT[0].name;
+              move = newT[0].extra;
+            }
+          }
+          console.log(
+            `Will try to conquer continent by moving ${move} troops from ${a} to ${d}`
+          );
+        } else {
+          console.log(`Didn't change: should move ${move} from ${a} to ${d}`);
+        }
       }
+      // }
       return new Promise(res => {
-        if (a && d) {
+        if (a && d && a !== d && move > 0) {
           moveTroops({ move, a, d });
           gameLog.update({
             player: players[currentPlayersTurn],
-            text: `Moved ${move} troop${move > 1 ? "s" : ""} from ${a} to ${d}`
+            text: `Moved ${move} troop${
+              move > 1 ? "s" : ""
+            } from ${getNameFromID(a)} to ${getNameFromID(d)}`
           });
+          if (!fastForward) {
+            let pitch = -2 * Math.PI;
+            if (scene.mode === 1) pitch = -1;
+            flyToCountries({ ids: [a, d], pitch, range: 0 }).then(() =>
+              res(true)
+            );
+          } else {
+            setTimeout(
+              () => {
+                res(true);
+              },
+              fastForward === 2 ? 10 : 400
+            );
+          }
+        } else {
+          res(true);
         }
-        setTimeout(
-          () => {
-            res(true);
-          },
-          fastForward === 2 ? 100 : 400
-        );
       });
     }
 
@@ -2685,8 +2772,8 @@ function main({
         if (phase === 0) {
           humanPlaceForces(id, player);
         } else {
-          if (player.territory.find(x => x.name === id).forces < 2) {
-            if (phase === 1) showAlert(`You need at least 2 forces to attack.`);
+          if (player.territory.find(x => x.name === id).forces < 3) {
+            if (phase === 1) showAlert(`You need at least 3 forces to attack.`);
             else if (phase === 2) showAlert(`No forces to move.`);
             return;
           }
@@ -2828,7 +2915,9 @@ function main({
         updateMap([id]);
         updateSummary();
         setTimeout(() => {
-          let text = `Placed ${num} troop${num > 1 ? "s" : ""} in ${id}`;
+          let text = `Placed ${num} troop${
+            num > 1 ? "s" : ""
+          } in ${getNameFromID(id)}`;
           gameLog.update({ player, text });
           justPlaced = false;
           if (player.forcesToPlace === 0) nextPhaseButton.disabled = false;
@@ -3172,13 +3261,22 @@ function main({
                                 isMCA ||
                                 wTerritory.forces < 4
                               ) {
+                                let player = players[currentPlayersTurn];
                                 gameLog.update({
-                                  player: players[currentPlayersTurn],
+                                  player,
                                   text: `Moved ${wTerritory.forces -
-                                    1} troops from ${aggressor} to ${defender}`
+                                    1} troops from ${getNameFromID(
+                                    aggressor
+                                  )} to ${getNameFromID(defender)}`
                                 });
                                 moveTroops({
-                                  move: wTerritory.forces - 1,
+                                  move:
+                                    isComputer && wTerritory.forces >= 4
+                                      ? shouldMoveTroopsAfterBattle(
+                                          wTerritory,
+                                          player
+                                        )
+                                      : wTerritory.forces - 1,
                                   a: aggressor,
                                   d: defender
                                 });
@@ -3333,7 +3431,9 @@ function main({
 
       moveTroopsButton.addEventListener("click", function() {
         if (moveTroopsQueue.length) return;
-        let text = `Moved ${final} troops from ${a} to ${d}`;
+        let text = `Moved ${final} troops from ${getNameFromID(
+          a
+        )} to ${getNameFromID(d)}`;
         gameLog.update({ player: players[currentPlayersTurn], text });
         clearInterval(interval);
         moveTroopsContainer.style.display = "none";

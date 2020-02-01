@@ -1234,7 +1234,7 @@ function main({
             color,
             territory: [],
             image: "Images/user.png",
-            cards: ["Infantry", "Infantry", "Cavalry", "Cavalry"],
+            cards: [],
             continents: [],
             isComputer,
             index: getPlayerIndex(i, names.length),

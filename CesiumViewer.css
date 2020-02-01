@@ -509,7 +509,7 @@ button.cesium-button.cesium-toolbar-button[data-bind="attr: { title: buttonToolt
   border: none;
   height: 20px;
   resize: none;
-  overflow:hidden;
+  overflow: hidden;
   background: none;
   text-align: center;
   font-family: "Uncial Antiqua", cursive;
@@ -589,7 +589,7 @@ button:hover {
 #playerCards > div {
   position: absolute;
   /* font-family: "Uncial Antiqua", cursive; */
-  font-size: 9px;
+  font-size: 7px;
   font-weight: bold;
   height: 42px;
   width: 27px;
@@ -842,8 +842,10 @@ button:hover {
   width: calc(100% + 10px);
 }
 
-#placeTroops {
+#placeTroops,
+#conqueredTerritories {
   margin: 5px;
   padding: 0 3px;
   box-shadow: 0 0 4px black;
+  background: rgba(255, 255, 255, 0.1);
 }

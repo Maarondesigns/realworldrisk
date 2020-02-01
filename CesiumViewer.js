@@ -335,95 +335,100 @@ function main({
               });
             }
           });
+          return new Promise(res => {
+            setTimeout(() => {
+              res();
+            }, countries.length & 10);
+          });
         })
         .then(function() {
-          let prevGame = localStorage.getItem("prevGame");
-          let confirm;
-          if (prevGame) {
-            confirm = window.confirm(
-              "Would you like to continue your previous game?"
-            );
-            if (confirm) initGame({}, JSON.parse(prevGame));
-            else localStorage.removeItem("prevGame");
-          }
-          if (!confirm) {
-            fetchAutoGenNames().then(names => {
-              let humans = ["Player 1"],
-                numOfRobots = 4,
-                robots = names.slice(0, numOfRobots);
-              function updateRobots() {
-                let robotsContainer = document.querySelector(
-                  "#startGame #robots"
-                );
-                robotsContainer.innerHTML = robots
-                  .map(r => `<div>${r}</div>`)
-                  .join("");
-              }
-              function updateHumans() {
-                let humansContainer = document.querySelector(
-                  "#startGame #humans"
-                );
-                humansContainer.innerHTML = humans
-                  .map(
-                    (h, i) =>
-                      `<div><textarea id="human_${i}" type="text" value="${h}">${h}</textarea></div>`
-                  )
-                  .join("");
-                humans.forEach((h, i) => {
-                  let el = document.getElementById(`human_${i}`);
-                  el.addEventListener("input", function(e) {
-                    // let t = e.target;
-                    let name = el.value;
-                    if (el.scrollTop != 0)
-                      el.style.height = el.scrollHeight + "px";
-                    humans[i] = name;
-                  });
-                });
-              }
-              let addHuman = document.getElementById("addHuman");
-              addHuman.addEventListener("click", function() {
-                if (humans.length + numOfRobots === 10) return;
-                humans.push(`Player ${humans.length + 1}`);
-                updateHumans();
-              });
-              let removeHuman = document.getElementById("removeHuman");
-              removeHuman.addEventListener("click", function() {
-                if (humans.length + numOfRobots === 2) return;
-                humans.pop();
-                updateHumans();
-              });
-              let addRobot = document.getElementById("addRobot");
-              addRobot.addEventListener("click", function() {
-                if (humans.length + numOfRobots === 10) return;
-                numOfRobots += 1;
-                robots = names.slice(0, numOfRobots);
-                updateRobots();
-              });
-              let removeRobot = document.getElementById("removeRobot");
-              removeRobot.addEventListener("click", function() {
-                if (humans.length + numOfRobots === 2) return;
-                numOfRobots -= 1;
-                robots = names.slice(0, numOfRobots);
-                updateRobots();
-              });
-              updateHumans();
-              updateRobots();
-              let startGame = document.getElementById("startGame");
-              startGame.style.display = "block";
-              let startGameButton = document.getElementById("startGameButton");
-              startGameButton.addEventListener("click", function() {
-                initGame({ humans, robots });
-              });
-            });
-          }
-          // startGameButton.addEventListener("click", initCanAttack);
-          // startGameButton.addEventListener("click", initContinents);
+          loadingIndicator.style.display = "none";
+          initializeGameOptions();
         })
         .otherwise(function(error) {
           showLoadError(source, error);
         });
       // });
     }
+  }
+
+  function initializeGameOptions() {
+    let prevGame = localStorage.getItem("prevGame");
+    let confirm;
+    if (prevGame) {
+      confirm = window.confirm(
+        "Would you like to continue your previous game?"
+      );
+      if (confirm) initGame({}, JSON.parse(prevGame));
+      else localStorage.removeItem("prevGame");
+    }
+    if (!confirm) {
+      fetchAutoGenNames().then(names => {
+        let humans = ["Player 1"],
+          numOfRobots = 4,
+          robots = names.slice(0, numOfRobots);
+        function updateRobots() {
+          let robotsContainer = document.querySelector("#startGame #robots");
+          robotsContainer.innerHTML = robots
+            .map(r => `<div>${r}</div>`)
+            .join("");
+        }
+        function updateHumans() {
+          let humansContainer = document.querySelector("#startGame #humans");
+          humansContainer.innerHTML = humans
+            .map(
+              (h, i) =>
+                `<div><textarea id="human_${i}" type="text" value="${h}">${h}</textarea></div>`
+            )
+            .join("");
+          humans.forEach((h, i) => {
+            let el = document.getElementById(`human_${i}`);
+            el.addEventListener("input", function(e) {
+              // let t = e.target;
+              let name = el.value;
+              if (el.scrollTop != 0) el.style.height = el.scrollHeight + "px";
+              humans[i] = name;
+            });
+          });
+        }
+        let addHuman = document.getElementById("addHuman");
+        addHuman.addEventListener("click", function() {
+          if (humans.length + numOfRobots === 10) return;
+          humans.push(`Player ${humans.length + 1}`);
+          updateHumans();
+        });
+        let removeHuman = document.getElementById("removeHuman");
+        removeHuman.addEventListener("click", function() {
+          if (humans.length + numOfRobots === 2) return;
+          humans.pop();
+          updateHumans();
+        });
+        let addRobot = document.getElementById("addRobot");
+        addRobot.addEventListener("click", function() {
+          if (humans.length + numOfRobots === 10) return;
+          numOfRobots += 1;
+          robots = names.slice(0, numOfRobots);
+          updateRobots();
+        });
+        let removeRobot = document.getElementById("removeRobot");
+        removeRobot.addEventListener("click", function() {
+          if (humans.length + numOfRobots === 2) return;
+          numOfRobots -= 1;
+          robots = names.slice(0, numOfRobots);
+          updateRobots();
+        });
+        updateHumans();
+        updateRobots();
+        let startGame = document.getElementById("startGame");
+        startGame.style.display = "block";
+        let startGameButton = document.getElementById("startGameButton");
+        startGameButton.addEventListener("click", function() {
+          initGame({ humans, robots });
+        });
+      });
+    }
+    // startGameButton.addEventListener("click", initCanAttack);
+    // startGameButton.addEventListener("click", initContinents);
   }
 
   function fetchAutoGenNames() {
@@ -1208,10 +1213,8 @@ function main({
     let gameInstructions = document.getElementById("gameInstructions");
 
     function initPlayers() {
-      console.log("initiating players");
       players = [];
       function createPlayers(names) {
-        console.log("creating players: ", names);
         let colors = [
           [0, 1, 0],
           [0, 0, 1],
@@ -1222,7 +1225,7 @@ function main({
           [0.78, 0.58, 0.3],
           [0.63, 0.3, 0.78]
         ];
-        names.forEach((name, i) => {
+        names.forEach(({ name, isComputer }, i) => {
           let color = colors[i];
           if (!color) color = [Math.random(), Math.random(), Math.random()];
           // console.log(name, i, color);
@@ -1231,9 +1234,9 @@ function main({
             color,
             territory: [],
             image: "Images/user.png",
-            cards: [], //["Cavalry", "Infantry", "Artillery"],
+            cards: ["Infantry", "Infantry", "Cavalry", "Cavalry"],
             continents: [],
-            isComputer: i > humans.length - 1,
+            isComputer,
             index: getPlayerIndex(i, names.length),
             forcesToPlace: 0
           });
@@ -1248,7 +1251,16 @@ function main({
       //     // console.log(res);
       //     return res.json().then(names => {
       return new Promise(res => {
-        createPlayers([...humans, ...robots]);
+        createPlayers(
+          shuffle([
+            ...humans.map(x => {
+              return { name: x, isComputer: false };
+            }),
+            ...robots.map(x => {
+              return { name: x, isComputer: true };
+            })
+          ])
+        );
         res();
       });
       // });
@@ -1345,7 +1357,6 @@ function main({
     }
 
     function initPlayerTerritories() {
-      console.log("initiating player territories");
       shuffle(countries).forEach((e, i) => {
         let pI = i % players.length;
         let player = players[pI];
@@ -1546,7 +1557,7 @@ function main({
     //game global variables
     let currentPlayersTurn,
       firstPlayer,
-      playerGetsACard = prevGame ? prevGame.playerGetsACard : false,
+      playerGetsACard = prevGame ? +prevGame.playerGetsACard : 0,
       phases = ["Place Troops", "Attack", "Move Forces"],
       phase = -1,
       cards = ["Infantry", "Cavalry", "Artillery"],
@@ -1598,9 +1609,9 @@ function main({
       round = prevGame.round;
       promise = new Promise(res => res());
     } else {
-      currentPlayersTurn = Math.ceil(
-        Math.random() * (humans.length + robots.length - 1)
-      );
+      currentPlayersTurn = 0; //Math.ceil(
+      //Math.random() * (humans.length + robots.length - 1)
+      // );
       firstPlayer = currentPlayersTurn;
       promise = new Promise(res => {
         initPlayers().then(() => {
@@ -1634,6 +1645,9 @@ function main({
                 if (player.isComputer) {
                   fastForwardButton.style.display = "block";
                   doComputerPlayerTurn(player);
+                } else {
+                  nextPhaseButton.style.display = "block";
+                  updatePlayersCards();
                 }
               }
             }, 4000);
@@ -1689,9 +1703,7 @@ function main({
 
     function setCardTradeInHandler() {
       let playerCards = document.getElementById("playerCards");
-      playerCards.addEventListener("click", function() {
-        if (!players[currentPlayersTurn].isComputer) viewCards();
-      });
+      playerCards.addEventListener("click", viewCards);
     }
 
     function setGameLogToggleHandler() {
@@ -1881,6 +1893,8 @@ function main({
       currentPhase.innerHTML = "Current Phase: " + phases[phase];
       if (phase === 0)
         currentPhase.innerHTML += `<span id="placeTroops"></span>`;
+      else if (phase === 1)
+        currentPhase.innerHTML += `<span id="conqueredTerritories">Conquered: ${playerGetsACard}</span>`;
       if (playersInitialized) saveGameInLocalStorage();
     }
     goToNextPhase();
@@ -1963,6 +1977,7 @@ function main({
     }
 
     function viewCards() {
+      if (players[currentPlayersTurn].isComputer) return;
       let viewCards = document.getElementById("viewCards");
       viewCards.style.display = "flex";
       let player = players[currentPlayersTurn];
@@ -2034,75 +2049,100 @@ function main({
         .map((c, i, a) => {
           let text = "";
           if (!player.isComputer) text = `${c}<img src=${cardImages[c]}>`;
+          else text = `<span style="font-size:30px;">C</span>`;
           return `<div style="transform: translateX(${(i / a.length) * 12 -
             6}px) rotate(${(i / a.length) * 36 - 18}deg)">${text}</div>`;
         })
         .join("");
     }
 
-    function animateCard(card) {
+    function animateCard(cards) {
       if (fastForward === 2) return new Promise(res => res());
-      // let cards = players[currentPlayersTurn].cards.length;
-      let playerCards = document.getElementById("playerCards");
-      let h = window.innerHeight,
-        w = window.innerWidth;
-      let rect = playerCards.getBoundingClientRect();
-      let sScale = 5,
-        eScale = 1,
-        sTop = h * 0.5,
-        sLeft = w * 0.5,
-        eTop = rect.top,
-        eLeft = rect.left,
-        sRotate = 0,
-        eRotate = -18,
-        steps = 10,
-        currentStep = 0;
-      let text = "";
-      if (!players[currentPlayersTurn].isComputer)
-        text = `${card}<img src=${cardImages[card]}>`;
-      playerCards.innerHTML += `<div id="newCard" style="position:fixed;">${text}</div>`;
-      let newCard = document.getElementById("newCard");
-      newCard.style.transform = `scale(${sScale}) rotate(${sRotate}deg)`;
-      newCard.style.top = `${sTop}px`;
-      newCard.style.left = `${sLeft}px`;
+      else
+        return new Promise(res => {
+          let speed = 1200;
+          // let cards = players[currentPlayersTurn].cards.length;
+          let playerCards = document.getElementById("playerCards");
+          let h = window.innerHeight,
+            w = window.innerWidth;
+          let rect = playerCards.getBoundingClientRect();
+          let css = [];
+          cards.forEach((card, i) => {
+            let sScale = Math.max(Math.min(h, w) / 6 / 27, 5);
+            css[i] = {
+              sScale,
+              eScale: 1,
+              sTop: h * 0.5,
+              sLeft: w * 0.5 + i * 27 * sScale,
+              eTop: rect.top,
+              eLeft: rect.left,
+              sRotate: 0,
+              eRotate: -18,
+              steps: 10,
+              currentStep: 0
+            };
 
-      return new Promise(res => {
-        setTimeout(() => {
-          let interval = setInterval(() => {
-            if (currentStep >= steps) {
-              clearInterval(interval);
-              res(true);
-            } else {
-              let percent = currentStep / steps;
-              function getCurrent(s, e) {
-                let diff = s - e;
-                return s - diff * percent;
-              }
-              let scale = getCurrent(sScale, eScale);
-              let rotate = getCurrent(sRotate, eRotate);
-              let top = getCurrent(sTop, eTop);
-              let left = getCurrent(sLeft, eLeft);
-              // console.log({ percent, scale, rotate, top, left });
-              newCard.style.transform = `scale(${scale}) rotate(${rotate}deg)`;
-              newCard.style.top = `${top}px`;
-              newCard.style.left = `${left}px`;
-              currentStep += 1;
-            }
-          }, 500 / steps);
-        }, 1000);
-      });
+            let text = "";
+            if (!players[currentPlayersTurn].isComputer)
+              text = `${card}<img src=${cardImages[card]}>`;
+            else text = `<span style="font-size:28px;padding:2px;">C</span>`;
+            playerCards.innerHTML += `<div id="newCard_${i}" style="position:fixed;">${text}</div>`;
+            let newCard = document.getElementById("newCard_" + i);
+            newCard.style.transform = `scale(${css[i].sScale}) rotate(${css[i].sRotate}deg)`;
+            newCard.style.top = `${css[i].sTop}px`;
+            newCard.style.left = `${css[i].sLeft}px`;
+
+            setTimeout(() => {
+              let interval = setInterval(() => {
+                console.log(i);
+                let thisCard = document.getElementById("newCard_" + i);
+                if (css[i].currentStep >= css[i].steps) {
+                  clearInterval(interval);
+                } else {
+                  let percent = css[i].currentStep / css[i].steps;
+                  function getCurrent(s, e) {
+                    let diff = s - e;
+                    return s - diff * percent;
+                  }
+                  let scale = getCurrent(css[i].sScale, css[i].eScale);
+                  let rotate = getCurrent(css[i].sRotate, css[i].eRotate);
+                  let top = getCurrent(css[i].sTop, css[i].eTop);
+                  let left = getCurrent(css[i].sLeft, css[i].eLeft);
+                  // console.log({ percent, scale, rotate, top, left });
+                  if (thisCard) {
+                    thisCard.style.transform = `scale(${scale}) rotate(${rotate}deg)`;
+                    thisCard.style.top = `${top}px`;
+                    thisCard.style.left = `${left}px`;
+                  }
+                  css[i].currentStep += 1;
+                }
+              }, speed / 2 / css[i].steps);
+            }, speed);
+          });
+
+          setTimeout(() => {
+            res(true);
+          }, speed * 1.8);
+        });
     }
 
     function nextPlayersTurn() {
       turnOverButton.style.display = "none";
       if (playerGetsACard) {
-        playerGetsACard = false;
-        let card = cards[Math.floor(Math.random() * cards.length)];
-        animateCard(card).then(() => {
+        let n = playerGetsACard > 9 ? [1, 2] : [1];
+        let newCards = n.map(
+          x => cards[Math.floor(Math.random() * cards.length)]
+        );
+        animateCard(newCards).then(() => {
           let player = players[currentPlayersTurn];
-          let text = `Got a ${card} card for conquering territory`;
+          let text = `Got ${newCards.length} card${
+            newCards.length > 1 ? "s" : ""
+          } for conquering ${playerGetsACard} territor${
+            playerGetsACard > 1 ? "ies" : "y"
+          }`;
           gameLog.update({ player, text });
-          player.cards.push(card);
+          player.cards = [...player.cards, ...newCards];
+          playerGetsACard = 0;
           updatePlayersCards();
           setTimeout(() => {
             startNextTurn();
@@ -2123,7 +2163,8 @@ function main({
         )
           gameHasStarted = true;
         else incrementCurrentPlayer();
-        if (currentPlayersTurn === firstPlayer) incrementRound();
+        let firstAlivePlayer = players.findIndex(p => p.territory.length);
+        if (currentPlayersTurn === firstAlivePlayer) incrementRound();
         let player = players[currentPlayersTurn];
         if (player.isComputer) {
           fastForwardButton.style.display = "block";
@@ -2209,6 +2250,7 @@ function main({
     function placeComputerForces(player) {
       // console.log("placeComputerForces", player.forcesToPlace);
       let canTrade = canTradeCards(player);
+      console.log(player, canTrade);
       if (canTrade) tradeInCards(player, canTrade);
       return new Promise(res => {
         let alreadyReinforced = [];
@@ -2823,11 +2865,18 @@ function main({
                     updateMap([ids[i], ...getCanAttack(ids[i])]);
                     let success = winner.role === "aggressor";
                     i += 1;
-                    if ((i === ids.length || !success) && fastForward) {
+                    if (
+                      success &&
+                      i === ids.length - 1 &&
+                      fastForward &&
+                      getForces(shouldAttack) > 1 &&
+                      getCanAttack(shouldAttack, players[currentPlayersTurn])
+                        .length
+                    ) {
                       let pitch = -2 * Math.PI;
                       if (scene.mode === 1) pitch = -1;
                       flyToCountries({
-                        ids: [success ? shouldAttack : t],
+                        ids: [shouldAttack],
                         pitch,
                         range: 0 //5000000
                       });
@@ -3031,16 +3080,17 @@ function main({
           winner = diceRoll2.winner;
           diceRoll2.lost === "a" ? (aLostCount += 1) : (dLostCount += 1);
         }
-        if (!fastForward || !winner) updateMap([aggressor, defender]);
+        // if (!fastForward)
+        updateMap([aggressor, defender]);
         return new Promise(res => {
-            if (aLostCount) {
-              let el = document.getElementById("aLostCount");
-              if (el) el.innerHTML = `-${aLostCount}`;
-            }
-            if (dLostCount) {
-              let el = document.getElementById("dLostCount");
-              if (el) el.innerHTML = `-${dLostCount}`;
-            }          
+          if (aLostCount) {
+            let el = document.getElementById("aLostCount");
+            if (el) el.innerHTML = `-${aLostCount}`;
+          }
+          if (dLostCount) {
+            let el = document.getElementById("dLostCount");
+            if (el) el.innerHTML = `-${dLostCount}`;
+          }
           setTimeout(
             () => {
               if (winner) {
@@ -3068,7 +3118,7 @@ function main({
                       moveOver([defender, aggressor]);
                       res(winner);
                     } else if (role === "aggressor") {
-                      playerGetsACard = true;
+                      playerGetsACard += 1;
                       //set territory
                       if (battleDetails)
                         battleDetails.innerHTML += `<div>${dC} now belongs to ${players[currentPlayersTurn].name}</div>`;
@@ -3089,6 +3139,12 @@ function main({
                         forces: 0
                       });
                       //set continent
+                      if (
+                        players.filter(p => p.territory.length).length === 1
+                      ) {
+                        endGame(pWinner);
+                        return;
+                      }
                       setPlayerContinents({
                         winner: pWinner,
                         loser
@@ -3097,16 +3153,16 @@ function main({
                           let text = `${loser.name} has been defeated.`;
                           if (!isComputer)
                             text += ` You recieve ${loser.cards.length} cards!`;
-                          showAlert(text, loser);
-                          pWinner.cards = [...pWinner.cards, ...loser.cards];
-                          loser.cards = [];
-                          updatePlayersCards();
-                        }
-                        if (
-                          players.filter(p => p.territory.length).length === 1
-                        ) {
-                          endGame(pWinner);
-                          return;
+                          showAlert(text, loser).then(() => {
+                            animateCard(loser.cards).then(() => {
+                              pWinner.cards = [
+                                ...pWinner.cards,
+                                ...loser.cards
+                              ];
+                              loser.cards = [];
+                              updatePlayersCards();
+                            });
+                          });
                         }
                         setTimeout(
                           () => {
@@ -3345,6 +3401,13 @@ function main({
       endMove(ids);
       resetCountryTransparencies();
       updateSummary();
+      if (phase === 1) {
+        let conqueredTerritories = document.getElementById(
+          "conqueredTerritories"
+        );
+        if (conqueredTerritories)
+          conqueredTerritories.innerHTML = `Conquered: ${playerGetsACard}`;
+      }
     }
 
     function hideBattleDetails() {
@@ -3373,45 +3436,98 @@ function main({
     }
 
     function endGame(winner) {
-      alert(`${winner.name} is the winner! All opponents have been defeated!`);
-      screenSpaceHandler.removeInputAction(
-        Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK
-      );
-      let promises = [];
-      viewer.dataSources.remove(countryLabels);
-      countryLabels = undefined;
-      countries.forEach((c, i) => {
-        let filter = countryCoords.filter(x => x.id.split("_")[0] === c);
+      viewer.scene.camera.flyHome(1);
+      fastForward = 0;
+      resetCountryTransparencies();
+      showAlert(
+        `All opponents have been defeated. ${winner.name} has won the game in ${round} rounds. Thank you for playing!`,
+        winner
+      ).then(() => {
+        screenSpaceHandler.removeInputAction(
+          Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK
+        );
 
-        if (filter.length)
-          promises = [
-            ...promises,
-            ...filter.map(o => {
-              return removePrimitive(o.id).then(() => {
-                removePrimitive(o.id + "_transparent").then(() => {
-                  createPrimitive({
-                    cartesian: o.coords,
-                    id: o.id,
-                    fillOpacity: 0.3
+        let promises = [];
+        viewer.dataSources.remove(countryLabels);
+        countryLabels = undefined;
+        countries.forEach((c, i) => {
+          let filter = countryCoords.filter(x => x.id.split("_")[0] === c);
+
+          if (filter.length)
+            promises = [
+              ...promises,
+              ...filter.map(o => {
+                return removePrimitive(o.id).then(() => {
+                  removePrimitive(o.id + "_transparent").then(() => {
+                    createPrimitive({
+                      cartesian: o.coords,
+                      id: o.id,
+                      fillOpacity: 0.3
+                    });
                   });
                 });
-              });
-            })
-          ];
-      });
-      Promise.all(promises).then(res => {
-        localStorage.removeItem("prevGame");
-        document.getElementById("startGame").style.display = "block";
-        let gameInstructions = document.getElementById("gameInstructions");
-        let gameDetails = document.getElementById("gameDetails");
-        gameInstructions.style.display = "none";
-        gameDetails.style.display = "none";
-        let continentsButton = document.getElementById("continents");
-        continentsButton.removeEventListener("click", toggleContinents);
-        continentsButton.style.display = "none";
-        let detailsToggle = document.getElementById("gameDetailsToggle");
-        detailsToggle.style.display = "none";
-        detailsToggle.removeEventListener("click", toggleGameDetails);
+              })
+            ];
+        });
+        Promise.all(promises).then(res => {
+          localStorage.removeItem("prevGame");
+          // players = [];
+          // document.getElementById("startGame").style.display = "block";
+          // let gameInstructions = document.getElementById("gameInstructions");
+          // if (gameInstructions) gameInstructions.style.display = "none";
+          // let gameDetails = document.getElementById("gameDetails");
+          // if (gameDetails) gameDetails.style.display = "none";
+          // let continentsButton = document.getElementById("continents");
+          // if (continentsButton) {
+          //   continentsButton.removeEventListener("click", toggleContinents);
+          //   continentsButton.style.display = "none";
+          // }
+          // let detailsToggle = document.getElementById("gameDetailsToggle");
+          // if (detailsToggle) {
+          //   detailsToggle.style.display = "none";
+          //   detailsToggle.removeEventListener("click", toggleGameDetails);
+          // }
+          // let logToggle = document.getElementById("gameLogToggle");
+          // if (logToggle) {
+          //   logToggle.style.display = "none";
+          //   logToggle.removeEventListener("click", toggleGameLog);
+          // }
+          // let battleContainer = document.getElementById("battleContainer");
+          // if (battleContainer) {
+          //   battleContainer.innerHTML = "";
+          //   battleContainer.style.display = "none";
+          // }
+          // let moveTroopsContainer = document.getElementById(
+          //   "moveTroopsContainer"
+          // );
+          // if (moveTroopsContainer) {
+          //   moveTroopsContainer.innerHTML = "";
+          //   moveTroopsContainer.style.display = "none";
+          // }
+          // let playerCards = document.getElementById("playerCards");
+          // if (playerCards) {
+          //   playerCards.style.display = "none";
+          //   playerCards.innerHTML = "";
+          //   playerCards.removeEventListener("click", viewCards);
+          // }
+          // let fastForwardButton = document.getElementById("fastForward");
+          // if (fastForwardButton) {
+          //   fastForwardButton.style.display = "none";
+          //   fastForwardButton.innerHTML = "";
+          // }
+          // let round = document.getElementById("round");
+          // if (round) {
+          //   round.style.display = "none";
+          //   round.innerHTML = "";
+          // }
+          // let playersTurn = document.getElementById("playersTurn");
+          // if (playersTurn) {
+          //   playersTurn.style.display = "none";
+          //   playersTurn.innerHTML = "";
+          // }
+          //initializeGameOptions();
+          window.location.reload();
+        });
       });
     }
   }
@@ -3647,8 +3763,6 @@ function main({
   //     timeout = window.setTimeout(saveCamera, 1000);
   //   });
   // }
-
-  loadingIndicator.style.display = "none";
 }
 
 let paths = [

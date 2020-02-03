@@ -218,8 +218,7 @@ function main({
     })
   );
 
-    naturalEarthDark.alpha = 0;
-
+  naturalEarthDark.alpha = 0;
 
   viewer.extend(Cesium.viewerDragDropMixin);
   if (endUserOptions.inspector) {
@@ -240,6 +239,8 @@ function main({
   //main global variables
   var scene = viewer.scene;
   let troopFactor = 1;
+  let gameIsOver=false;
+  let globeSpinInterval;
   var context = scene.context;
   if (endUserOptions.debug) {
     context.validateShaderProgram = true;
@@ -344,7 +345,13 @@ function main({
         })
         .then(function() {
           loadingIndicator.style.display = "none";
+          globeSpinInterval = setInterval(() => {
+              spinGlobe(0.01);
+            }, 40);
+          addContinentBorders().then(() => {
+        drawCanAttackPaths();
           initializeGameOptions();
+        })
         })
         .otherwise(function(error) {
           showLoadError(source, error);
@@ -519,7 +526,7 @@ function main({
         timeout += borderGroups.length * 10;
         borderGroups.forEach((Border, i) => {
           setTimeout(() => {
-            spinGlobe(0.01);
+            // spinGlobe(0.01);
             if (Border.length > 1) addContinentBorder({ Name, Color, Border });
           }, 10 * i);
         });
@@ -1026,6 +1033,7 @@ function main({
   }
 
   function updateMap(ids) {
+    if(gameIsOver)return;
     // console.log("updateMap", ids);
     let filteredLabels = countryLabels.entities.values,
       filteredCountries = countries;
@@ -1087,11 +1095,11 @@ function main({
 
     return new Promise(res => {
       // let interval = setInterval(() => {
-        // console.log(totalPrimitives, finished.length);
-        // if (totalPrimitives === finished.length) {
-          // clearInterval(interval);
-          res(true);
-        // }
+      // console.log(totalPrimitives, finished.length);
+      // if (totalPrimitives === finished.length) {
+      // clearInterval(interval);
+      res(true);
+      // }
       // }, 3);
     });
 
@@ -1193,6 +1201,7 @@ function main({
   let showContinents = true; //false;
 
   function initGame(names, prevGame) {
+    clearInterval(globeSpinInterval)
     let { humans, robots } = names;
     let gameLog = {
       log: [],
@@ -1532,6 +1541,9 @@ function main({
       fastForward = 0,
       battleOccurred = prevGame ? prevGame.battleOccurred : false;
 
+    let playersDefeatedBy = [];
+    let continentsFirstControlledBy = [];
+
     let nextPhaseButton = document.getElementById("nextPhase");
     let turnOverButton = document.getElementById("turnOver");
     let fastForwardButton = document.getElementById("fastForward");
@@ -1584,8 +1596,8 @@ function main({
     promise.then(() => {
       playersInitialized = true;
       addCountryLabels();
-      addContinentBorders().then(() => {
-        drawCanAttackPaths();
+      // addContinentBorders().then(() => {
+      //   drawCanAttackPaths();
         setTimeout(() => {
           toggleContinents();
           initGameMap().then(() => {
@@ -1614,7 +1626,7 @@ function main({
             }, 4000);
           });
         }, 500);
-      });
+      // });
     });
 
     function showGameStuff() {
@@ -1971,7 +1983,7 @@ function main({
       document
         .querySelector("#viewCards .backdrop")
         .addEventListener("click", function() {
-          console.log("close cards");
+          // console.log("close cards");
           viewCards.innerHTML = "";
           viewCards.style.display = "none";
         });
@@ -2127,9 +2139,9 @@ function main({
         let firstAlivePlayer = players.findIndex(p => p.territory.length);
         if (currentPlayersTurn === firstAlivePlayer) incrementRound();
         let player = players[currentPlayersTurn];
-        console.log(
-          `_____________________${player.name}_________________________`
-        );
+        // console.log(
+        //   `_____________________${player.name}_________________________`
+        // );
         if (player.isComputer) {
           fastForwardButton.style.display = "block";
         } else {
@@ -2226,16 +2238,16 @@ function main({
               player,
               !tryToGetCont.length
             );
-            console.log(
-              "place",
-              { forcesToPlace: player.forcesToPlace },
-              { tryToGetCont, shouldReinforce }
-            );
+            // console.log(
+            //   "place",
+            //   { forcesToPlace: player.forcesToPlace },
+            //   { tryToGetCont, shouldReinforce }
+            // );
             let id, amount;
             if (shouldReinforce.length) {
               id = shouldReinforce[0].country;
               amount = shouldReinforce[0].amount;
-              console.log(`Reinforcing ${id} with ${amount} to defend `);
+              // console.log(`Reinforcing ${id} with ${amount} to defend `);
             } else {
               let filter = tryToGetCont.filter(
                 x => !alreadyReinforced.find(y => y === x.name)
@@ -2265,14 +2277,14 @@ function main({
                     ? Math.round(player.forcesToPlace / tryToGetCont.length)
                     : chosen.amount;
                 alreadyReinforced.push(id);
-                console.log(`Reinforcing ${id} with ${amount} to attack `);
+                // console.log(`Reinforcing ${id} with ${amount} to attack `);
               }
             }
             if (amount > player.forcesToPlace) amount = player.forcesToPlace;
             if (amount < 1 && player.forcesToPlace) amount = 1;
 
             let duration = fastForward ? (fastForward === 2 ? 0 : 200) : 1000;
-            console.log({ id, amount });
+            // console.log({ id, amount });
             setTimeout(() => {
               if (!fastForward)
                 flyToCountries({ ids: [id] }).then(() => {
@@ -2430,22 +2442,22 @@ function main({
       // console.log({ phase });
       let continent2 = getCountries(sortedContinents[1]);
       let filter2 = continent2.filter(x => x.amount > 0);
-      console.log(
-        "continent1: ",
-        continent1.map(x => `${x.name}:${x.amount}`)
-      );
-      console.log(
-        "filter1: ",
-        filter1.map(x => `${x.name}:${x.amount}`)
-      );
-      console.log(
-        "continent2: ",
-        continent2.map(x => `${x.name}:${x.amount}`)
-      );
-      console.log(
-        "filter2: ",
-        filter2.map(x => `${x.name}:${x.amount}`)
-      );
+      // console.log(
+      //   "continent1: ",
+      //   continent1.map(x => `${x.name}:${x.amount}`)
+      // );
+      // console.log(
+      //   "filter1: ",
+      //   filter1.map(x => `${x.name}:${x.amount}`)
+      // );
+      // console.log(
+      //   "continent2: ",
+      //   continent2.map(x => `${x.name}:${x.amount}`)
+      // );
+      // console.log(
+      //   "filter2: ",
+      //   filter2.map(x => `${x.name}:${x.amount}`)
+      // );
       if (player.algorithm === "b")
         return continent1.length ? continent1 : continent2;
       if (!filter1.length) {
@@ -2608,15 +2620,15 @@ function main({
         move = sortedTerritory[0].extra,
         d = cmt.find(x => getCanAttack(x, player).length);
       if (player.algorithm !== "b") {
-        console.log("sortedTerritory:", sortedTerritory, "cmt:", cmt);
-        console.log(`Pre-calc: should move ${move} from ${a} to ${d}`);
+        // console.log("sortedTerritory:", sortedTerritory, "cmt:", cmt);
+        // console.log(`Pre-calc: should move ${move} from ${a} to ${d}`);
         let tryToGetCont = shouldTryToConquerContinent(player).map(x => x.name);
 
         let shouldReinforce = shouldReinforceContinent(
           player,
           !tryToGetCont.length
         );
-        console.log({ shouldReinforce, tryToGetCont });
+        // console.log({ shouldReinforce, tryToGetCont });
         if (shouldReinforce.length) {
           let { country, amount } = shouldReinforce[0];
           cmt = calcCanMoveTo(
@@ -2631,16 +2643,16 @@ function main({
           if (index.extra > sortedTerritory[0].extra / 2) {
             d = country;
             move = index.extra;
-            console.log(
-              `Will reinforce ${country} by moving ${move} troops from ${a} to ${d}`
-            );
+            // console.log(
+            //   `Will reinforce ${country} by moving ${move} troops from ${a} to ${d}`
+            // );
           } else {
             //find best country to move extra to
-            console.log(
-              "Should find best country to move extra to",
-              sortedTerritory[0],
-              tryToGetCont
-            );
+            // console.log(
+            //   "Should find best country to move extra to",
+            //   sortedTerritory[0],
+            //   tryToGetCont
+            // );
           }
         } else if (tryToGetCont.length) {
           // tryToGetCont
@@ -2657,7 +2669,7 @@ function main({
           // if (tryToGetCont.length) {
           let newD = cmt.find(c => tryToGetCont.indexOf(c) !== -1);
           if (!newD) {
-            console.log("Re-calculating d");
+            // console.log("Re-calculating d");
             newD = tryToGetCont.find(
               x =>
                 calcCanMoveTo(
@@ -2665,7 +2677,7 @@ function main({
                   player.territory.map(t => t.name)
                 ).length
             );
-            console.log({ newD });
+            // console.log({ newD });
             if (newD) {
               cmt = calcCanMoveTo(
                 newD,
@@ -2683,11 +2695,11 @@ function main({
               }
             }
           }
-          console.log(
-            `Will try to conquer continent by moving ${move} troops from ${a} to ${d}`
-          );
+          // console.log(
+          //   `Will try to conquer continent by moving ${move} troops from ${a} to ${d}`
+          // );
         } else {
-          console.log(`Didn't change: should move ${move} from ${a} to ${d}`);
+          // console.log(`Didn't change: should move ${move} from ${a} to ${d}`);
         }
       }
       // }
@@ -3222,8 +3234,7 @@ function main({
           winner = diceRoll2.winner;
           diceRoll2.lost === "a" ? (aLostCount += 1) : (dLostCount += 1);
         }
-         if (!fastForward)
-        updateMap([aggressor, defender]);
+        if (!fastForward) updateMap([aggressor, defender]);
         return new Promise(res => {
           if (aLostCount) {
             let el = document.getElementById("aLostCount");
@@ -3281,12 +3292,6 @@ function main({
                         forces: 0
                       });
                       //set continent
-                      if (
-                        players.filter(p => p.territory.length).length === 1
-                      ) {
-                        endGame(pWinner);
-                        return;
-                      }
                       setPlayerContinents({
                         winner: pWinner,
                         loser
@@ -3295,6 +3300,10 @@ function main({
                           let text = `${loser.name} has been defeated.`;
                           if (!isComputer)
                             text += ` You recieve ${loser.cards.length} cards!`;
+                          playersDefeatedBy.push({
+                            defeated: loser,
+                            by: pWinner
+                          });
                           showAlert(text, loser).then(() => {
                             animateCard(loser.cards).then(() => {
                               pWinner.cards = [
@@ -3305,6 +3314,12 @@ function main({
                               updatePlayersCards();
                             });
                           });
+                        }
+                        if (
+                          players.filter(p => p.territory.length).length === 1
+                        ) {
+                          endGame(pWinner);
+                          return;
                         }
                         setTimeout(
                           () => {
@@ -3415,6 +3430,8 @@ function main({
             showAlert(`${winner.name} now controls all of ${won}`, winner)
           );
           winner.continents.push(won);
+          if (!continentsFirstControlledBy[won])
+            continentsFirstControlledBy[won] = winner;
         }
         if (lost) {
           ps.push(showAlert(`${loser.name} no longer controls ${lost}`, loser));
@@ -3593,13 +3610,23 @@ function main({
     }
 
     function endGame(winner) {
-      viewer.scene.camera.flyHome(1);
-      fastForward = 0;
-      resetCountryTransparencies();
-      showAlert(
-        `All opponents have been defeated. ${winner.name} has won the game in ${round} rounds. Thank you for playing!`,
-        winner
-      ).then(() => {
+      gameIsOver=true;
+      let text = `<div>${winner.name} has won the game in ${round} rounds.</div>`;
+      playersDefeatedBy.forEach(x => {
+        text += `<div><span style="font-weight:bold;color:${integerToRGB(
+          x.by.color
+        )}">${
+          x.by.name
+        }</span> killed <span style="font-weight:bold;color:${integerToRGB(
+          x.defeated.color
+        )}">${x.defeated.name}</span></div>`;
+      });
+      Object.keys(continentsFirstControlledBy).forEach(k => {
+        text += `<div>${k} first contolled by <span style="font-weight:bold;color:${integerToRGB(
+          continentsFirstControlledBy[k].color
+        )}">${continentsFirstControlledBy[k].name}</span></div>`;
+      });
+      showAlert(text, winner, 240000).then(() => {
         screenSpaceHandler.removeInputAction(
           Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK
         );
@@ -3628,62 +3655,68 @@ function main({
         });
         Promise.all(promises).then(res => {
           localStorage.removeItem("prevGame");
+          viewer.scene.camera.flyHome(1);
+          fastForward = 0;
+          resetCountryTransparencies();
+          globeSpinInterval = setInterval(() => {
+            spinGlobe(0.01);
+          }, 40);
           // players = [];
           // document.getElementById("startGame").style.display = "block";
-          // let gameInstructions = document.getElementById("gameInstructions");
-          // if (gameInstructions) gameInstructions.style.display = "none";
-          // let gameDetails = document.getElementById("gameDetails");
-          // if (gameDetails) gameDetails.style.display = "none";
-          // let continentsButton = document.getElementById("continents");
-          // if (continentsButton) {
-          //   continentsButton.removeEventListener("click", toggleContinents);
-          //   continentsButton.style.display = "none";
-          // }
-          // let detailsToggle = document.getElementById("gameDetailsToggle");
-          // if (detailsToggle) {
-          //   detailsToggle.style.display = "none";
-          //   detailsToggle.removeEventListener("click", toggleGameDetails);
-          // }
-          // let logToggle = document.getElementById("gameLogToggle");
-          // if (logToggle) {
-          //   logToggle.style.display = "none";
-          //   logToggle.removeEventListener("click", toggleGameLog);
-          // }
-          // let battleContainer = document.getElementById("battleContainer");
-          // if (battleContainer) {
-          //   battleContainer.innerHTML = "";
-          //   battleContainer.style.display = "none";
-          // }
-          // let moveTroopsContainer = document.getElementById(
-          //   "moveTroopsContainer"
-          // );
-          // if (moveTroopsContainer) {
-          //   moveTroopsContainer.innerHTML = "";
-          //   moveTroopsContainer.style.display = "none";
-          // }
-          // let playerCards = document.getElementById("playerCards");
-          // if (playerCards) {
-          //   playerCards.style.display = "none";
-          //   playerCards.innerHTML = "";
-          //   playerCards.removeEventListener("click", viewCards);
-          // }
-          // let fastForwardButton = document.getElementById("fastForward");
-          // if (fastForwardButton) {
-          //   fastForwardButton.style.display = "none";
-          //   fastForwardButton.innerHTML = "";
-          // }
-          // let round = document.getElementById("round");
-          // if (round) {
-          //   round.style.display = "none";
-          //   round.innerHTML = "";
-          // }
-          // let playersTurn = document.getElementById("playersTurn");
-          // if (playersTurn) {
-          //   playersTurn.style.display = "none";
-          //   playersTurn.innerHTML = "";
-          // }
+          let gameInstructions = document.getElementById("gameInstructions");
+          if (gameInstructions) gameInstructions.style.display = "none";
+          let gameDetails = document.getElementById("gameDetails");
+          if (gameDetails) gameDetails.style.display = "none";
+          let continentsButton = document.getElementById("continents");
+          if (continentsButton) {
+            continentsButton.removeEventListener("click", toggleContinents);
+            continentsButton.style.display = "none";
+          }
+          let detailsToggle = document.getElementById("gameDetailsToggle");
+          if (detailsToggle) {
+            detailsToggle.style.display = "none";
+            detailsToggle.removeEventListener("click", toggleGameDetails);
+          }
+          let logToggle = document.getElementById("gameLogToggle");
+          if (logToggle) {
+            logToggle.style.display = "none";
+            logToggle.removeEventListener("click", toggleGameLog);
+          }
+          let battleContainer = document.getElementById("battleContainer");
+          if (battleContainer) {
+            battleContainer.innerHTML = "";
+            battleContainer.style.display = "none";
+          }
+          let moveTroopsContainer = document.getElementById(
+            "moveTroopsContainer"
+          );
+          if (moveTroopsContainer) {
+            moveTroopsContainer.innerHTML = "";
+            moveTroopsContainer.style.display = "none";
+          }
+          let playerCards = document.getElementById("playerCards");
+          if (playerCards) {
+            playerCards.style.display = "none";
+            playerCards.innerHTML = "";
+            playerCards.removeEventListener("click", viewCards);
+          }
+          let fastForwardButton = document.getElementById("fastForward");
+          if (fastForwardButton) {
+            fastForwardButton.style.display = "none";
+            fastForwardButton.innerHTML = "";
+          }
+          let round = document.getElementById("round");
+          if (round) {
+            round.style.display = "none";
+            round.innerHTML = "";
+          }
+          let playersTurn = document.getElementById("playersTurn");
+          if (playersTurn) {
+            playersTurn.style.display = "none";
+            playersTurn.innerHTML = "";
+          }
           //initializeGameOptions();
-          window.location.reload();
+          // window.location.reload();
         });
       });
     }

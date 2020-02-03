@@ -3610,57 +3610,61 @@ function main({
     }
 
     function endGame(winner) {
+
       gameIsOver=true;
-      let text = `<div>${winner.name} has won the game in ${round} rounds.</div>`;
+      localStorage.removeItem("prevGame");
+      viewer.scene.camera.flyHome(1);
+      fastForward = 0;
+      resetCountryTransparencies();
+      globeSpinInterval = setInterval(() => {
+        spinGlobe(0.01);
+      }, 40);
+
+      let text = `<div>${winner.name}(${winner.algorithm}) has won the game in ${round} rounds.</div>`;
       playersDefeatedBy.forEach(x => {
         text += `<div><span style="font-weight:bold;color:${integerToRGB(
           x.by.color
         )}">${
           x.by.name
-        }</span> killed <span style="font-weight:bold;color:${integerToRGB(
+        }(${x.by.algorithm})</span> killed <span style="font-weight:bold;color:${integerToRGB(
           x.defeated.color
-        )}">${x.defeated.name}</span></div>`;
+        )}">${x.defeated.name}(${x.defeated.algorithm})</span></div>`;
       });
       Object.keys(continentsFirstControlledBy).forEach(k => {
         text += `<div>${k} first contolled by <span style="font-weight:bold;color:${integerToRGB(
           continentsFirstControlledBy[k].color
         )}">${continentsFirstControlledBy[k].name}</span></div>`;
       });
-      showAlert(text, winner, 240000).then(() => {
-        screenSpaceHandler.removeInputAction(
-          Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK
-        );
+      
+      showAlert(text, winner, 2400000).then(() => {
 
-        let promises = [];
-        viewer.dataSources.remove(countryLabels);
-        countryLabels = undefined;
-        countries.forEach((c, i) => {
-          let filter = countryCoords.filter(x => x.id.split("_")[0] === c);
+        // screenSpaceHandler.removeInputAction(
+        //   Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK
+        // );
 
-          if (filter.length)
-            promises = [
-              ...promises,
-              ...filter.map(o => {
-                return removePrimitive(o.id).then(() => {
-                  removePrimitive(o.id + "_transparent").then(() => {
-                    createPrimitive({
-                      cartesian: o.coords,
-                      id: o.id,
-                      fillOpacity: 0.3
-                    });
-                  });
-                });
-              })
-            ];
-        });
-        Promise.all(promises).then(res => {
-          localStorage.removeItem("prevGame");
-          viewer.scene.camera.flyHome(1);
-          fastForward = 0;
-          resetCountryTransparencies();
-          globeSpinInterval = setInterval(() => {
-            spinGlobe(0.01);
-          }, 40);
+        // let promises = [];
+        // viewer.dataSources.remove(countryLabels);
+        // countryLabels = undefined;
+        // countries.forEach((c, i) => {
+        //   let filter = countryCoords.filter(x => x.id.split("_")[0] === c);
+
+        //   if (filter.length)
+        //     promises = [
+        //       ...promises,
+        //       ...filter.map(o => {
+        //         return removePrimitive(o.id).then(() => {
+        //           removePrimitive(o.id + "_transparent").then(() => {
+        //             createPrimitive({
+        //               cartesian: o.coords,
+        //               id: o.id,
+        //               fillOpacity: 0.3
+        //             });
+        //           });
+        //         });
+        //       })
+        //     ];
+        // });
+        // Promise.all(promises).then(res => {
           // players = [];
           // document.getElementById("startGame").style.display = "block";
           let gameInstructions = document.getElementById("gameInstructions");
@@ -3717,7 +3721,7 @@ function main({
           }
           //initializeGameOptions();
           // window.location.reload();
-        });
+        // });
       });
     }
   }

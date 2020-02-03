@@ -217,9 +217,9 @@ function main({
       url: "data/mapTiles/naturalEarthDarkSmall"
     })
   );
-  setTimeout(() => {
+
     naturalEarthDark.alpha = 0;
-  }, 10000);
+
 
   viewer.extend(Cesium.viewerDragDropMixin);
   if (endUserOptions.inspector) {
@@ -237,8 +237,9 @@ function main({
     showLoadError(name, error);
   });
 
-  //main globals
+  //main global variables
   var scene = viewer.scene;
+  let troopFactor = 1;
   var context = scene.context;
   if (endUserOptions.debug) {
     context.validateShaderProgram = true;
@@ -916,9 +917,11 @@ function main({
     if (player) return player.name;
   }
   function getIDFromName(name) {
+    if (!name) return;
     return countryData.find(x => x.country === name).id;
   }
   function getNameFromID(id) {
+    if (!id) return;
     return countryData.find(x => x.id === id).country;
   }
 
@@ -943,33 +946,33 @@ function main({
     let totalPrimitives = 0;
     countries.forEach((c, i) => {
       let color = getPlayerColor(c);
-      let height = getForces(c) * 30000;
+      let height = getForces(c) * (30000 / troopFactor);
       let filter = countryCoords.filter(x => x.id.split("_")[0] === c);
       totalPrimitives += filter.length;
       if (filter.length)
         filter.forEach(o => {
           setTimeout(() => {
             spinGlobe(0.02);
-            removePrimitive(o.id).then(() => {
-              createPrimitive({
-                cartesian: o.coords,
-                id: o.id,
-                height,
-                fillColor: color,
-                strokeColor: color
-              });
-            });
+            // removePrimitive(o.id).then(() => {
+            //   createPrimitive({
+            //     cartesian: o.coords,
+            //     id: o.id,
+            //     height,
+            //     fillColor: color,
+            //     strokeColor: color
+            //   });
+            // });
 
-            createPrimitive({
-              cartesian: o.coords,
-              id: o.id + "_transparent",
-              height,
-              fillColor: color,
-              strokeColor: color,
-              fillOpacity: 0.1,
-              strokeOpacity: 0.2,
-              dontShow: true
-            });
+            // createPrimitive({
+            //   cartesian: o.coords,
+            //   id: o.id + "_transparent",
+            //   height,
+            //   fillColor: color,
+            //   strokeColor: color,
+            //   fillOpacity: 0.1,
+            //   strokeOpacity: 0.2,
+            //   dontShow: true
+            // });
 
             let continent = continents.find(
               x => x.Countries.indexOf(o.id.split("_")[0]) !== -1
@@ -1038,58 +1041,58 @@ function main({
       l.position = Cesium.Cartesian3.fromDegrees(
         l.centroid[0],
         l.centroid[1],
-        getForces(l.name) * 30000 + 20000
+        getForces(l.name) * (30000 / troopFactor) + 20000
       );
     });
     // let primitives = viewer.scene.primitives._primitives;
     // primitives.forEach(p => {
     //   if (p._instanceIds) p.destroy();
     // });
-    let finished = [],
-      totalPrimitives = 0;
-    filteredCountries.forEach((c, i) => {
-      let color = getPlayerColor(c);
-      let height = getForces(c) * 30000;
-      let filter = countryCoords.filter(x => x.id.split("_")[0] === c);
-      totalPrimitives += filter.length;
-      if (filter.length)
-        filter.forEach(o => {
-          setTimeout(() => {
-            removePrimitive(o.id).then(() => {
-              createPrimitive({
-                cartesian: o.coords,
-                id: o.id,
-                height,
-                fillColor: color,
-                strokeColor: color
-              }).then(() => {
-                finished.push(o.id);
-              });
-            });
-            removePrimitive(o.id + "_transparent").then(() => {
-              createPrimitive({
-                cartesian: o.coords,
-                id: o.id + "_transparent",
-                height,
-                fillColor: color,
-                strokeColor: color,
-                fillOpacity: 0.1,
-                strokeOpacity: 0.2,
-                dontShow: true
-              });
-            });
-          }, 5 * (i + 1));
-        });
-    });
+    // let finished = [],
+    //   totalPrimitives = 0;
+    // filteredCountries.forEach((c, i) => {
+    //   let color = getPlayerColor(c);
+    //   let height = getForces(c) * (30000 / troopFactor);
+    //   let filter = countryCoords.filter(x => x.id.split("_")[0] === c);
+    //   totalPrimitives += filter.length;
+    //   if (filter.length)
+    //     filter.forEach(o => {
+    //       setTimeout(() => {
+    //         removePrimitive(o.id).then(() => {
+    //           createPrimitive({
+    //             cartesian: o.coords,
+    //             id: o.id,
+    //             height,
+    //             fillColor: color,
+    //             strokeColor: color
+    //           }).then(() => {
+    //             finished.push(o.id);
+    //           });
+    //         });
+    //         removePrimitive(o.id + "_transparent").then(() => {
+    //           createPrimitive({
+    //             cartesian: o.coords,
+    //             id: o.id + "_transparent",
+    //             height,
+    //             fillColor: color,
+    //             strokeColor: color,
+    //             fillOpacity: 0.1,
+    //             strokeOpacity: 0.2,
+    //             dontShow: true
+    //           });
+    //         });
+    //       }, 5 * (i + 1));
+    //     });
+    // });
 
     return new Promise(res => {
-      let interval = setInterval(() => {
+      // let interval = setInterval(() => {
         // console.log(totalPrimitives, finished.length);
-        if (totalPrimitives === finished.length) {
-          clearInterval(interval);
+        // if (totalPrimitives === finished.length) {
+          // clearInterval(interval);
           res(true);
-        }
-      }, 3);
+        // }
+      // }, 3);
     });
 
     // console.log(primitivesToBeDestroyed);
@@ -1238,7 +1241,8 @@ function main({
             continents: [],
             isComputer,
             index: getPlayerIndex(i, names.length),
-            forcesToPlace: 0
+            forcesToPlace: 0,
+            algorithm: i % 2 === 0 ? "a" : "b"
           });
         });
       }
@@ -1319,7 +1323,7 @@ function main({
         let player = players[pI];
         player.territory.push({
           name: e,
-          forces: 1
+          forces: 1 * troopFactor
         });
       });
       // continents.forEach((cont, i) => {
@@ -1333,13 +1337,13 @@ function main({
       // });
       players.forEach((p, i) => {
         let total = calcTotalForces(p);
-        let initialAmount = Math.ceil(countries.length / players.length) * 3;
+        let initialAmount =
+          Math.ceil(countries.length / players.length) * (3 * troopFactor);
         let left = initialAmount - total;
         while (left > 0) {
-          p.territory[
-            Math.floor(Math.random() * p.territory.length)
-          ].forces += 1;
-          left -= 1;
+          p.territory[Math.floor(Math.random() * p.territory.length)].forces +=
+            1 * troopFactor;
+          left -= 1 * troopFactor;
         }
         p.continents = getPlayerContinentsFromTerritory(p);
       });
@@ -1361,7 +1365,7 @@ function main({
             createPrimitive({
               cartesian: o.coords,
               id: o.id,
-              height: getForces(selected) * 30000,
+              height: getForces(selected) * (30000 / troopFactor),
               strokeColor: [1, 1, 1],
               fillColor: getPlayerColor(selected)
             });
@@ -1389,7 +1393,7 @@ function main({
               createPrimitive({
                 cartesian: o.coords,
                 id: o.id,
-                height: getForces(selected) * 30000,
+                height: getForces(selected) * (30000 / troopFactor),
                 strokeColor: [1, 1, 1],
                 fillColor: getPlayerColor(selected)
               });
@@ -1443,7 +1447,7 @@ function main({
             createPrimitive({
               cartesian: o.coords,
               id: o.id,
-              height: getForces(selected) * 30000,
+              height: getForces(selected) * (30000 / troopFactor),
               strokeColor: [1, 0, 0],
               fillColor: getPlayerColor(selected)
             });
@@ -1451,7 +1455,7 @@ function main({
         });
       // console.log("setCanAttackCountryColors", selected, canAttack);
       canAttack.forEach(c => {
-        let height = getForces(c) * 30000;
+        let height = getForces(c) * (30000 / troopFactor);
         filter = countryCoords.filter(x => x.id.split("_")[0] === c);
         if (filter)
           filter.forEach(o => {
@@ -1793,7 +1797,7 @@ function main({
           playerDetails += `<div class="playerNames" style="color:${tColor};background:${integerToRGB(
             p.color,
             0.9
-          )};">${p.name}${p.isComputer ? " (computer)" : ""}</div>`;
+          )};">${p.name}${p.isComputer ? ` (c-${p.algorithm})` : ""}</div>`;
           playerDetails += `<div>${calcTotalForces(p)}</div>`;
           let tL = p.territory.length,
             cL = countries.length;
@@ -1869,12 +1873,12 @@ function main({
 
     function calcForcesToPlace(player) {
       let territories = player.territory.length;
-      let canPlace = Math.round(territories / 6);
+      let canPlace = Math.round(territories / 6) * troopFactor;
       let text = `<div>${player.name} recieved:</div>`;
       text += `<div>${canPlace} forces for having ${territories} territories.</div>`;
       if (player.continents) {
         player.continents.forEach(c => {
-          let f = calcForcesFromContinent(c);
+          let f = calcForcesFromContinent(c) * troopFactor;
           text += `<div>${f} forces for controlling ${c}.</div>`;
           canPlace += f;
         });
@@ -2123,7 +2127,9 @@ function main({
         let firstAlivePlayer = players.findIndex(p => p.territory.length);
         if (currentPlayersTurn === firstAlivePlayer) incrementRound();
         let player = players[currentPlayersTurn];
-        console.log(`_____________________${player.name}_________________________`);
+        console.log(
+          `_____________________${player.name}_________________________`
+        );
         if (player.isComputer) {
           fastForwardButton.style.display = "block";
         } else {
@@ -2220,43 +2226,53 @@ function main({
               player,
               !tryToGetCont.length
             );
-            console.log("place",{forcesToPlace:player.forcesToPlace}, { tryToGetCont, shouldReinforce });
+            console.log(
+              "place",
+              { forcesToPlace: player.forcesToPlace },
+              { tryToGetCont, shouldReinforce }
+            );
             let id, amount;
             if (shouldReinforce.length) {
               id = shouldReinforce[0].country;
               amount = shouldReinforce[0].amount;
-               console.log(`Reinforcing ${id} with ${amount} to defend `);
+              console.log(`Reinforcing ${id} with ${amount} to defend `);
             } else {
               let filter = tryToGetCont.filter(
                 x => !alreadyReinforced.find(y => y === x.name)
               );
               if (filter.length) tryToGetCont = filter;
-              tryToGetCont
-                .map(x => x)
-                .forEach(c => {
-                  let ca = getCanAttack(c.name, player);
-                  ca.filter(x =>
-                    player.territory.find(y => y.name === x)
-                  ).forEach(x => {
-                    if (countries.indexOf(x) === -1)
-                      countries.push({ name: x });
-                  });
-                });
+              // tryToGetCont
+              //   .map(x => x)
+              //   .forEach(c => {
+              //     let ca = getCanAttack(c.name, player);
+              //     ca.filter(x =>
+              //       player.territory.find(y => y.name === x)
+              //     ).forEach(x => {
+              //       if (countries.indexOf(x) === -1)
+              //         countries.push({ name: x });
+              //     });
+              //   });
               // console.log(tryToGetCont);
               let chosen =
                 tryToGetCont[Math.floor(Math.random() * tryToGetCont.length)];
-              // console.log(chosen);
+              if (!chosen) console.log("!CHOSEN", tryToGetCont, chosen);
               // id = tryToGetCont[Math.floor(Math.random() * tryToGetCont.length)];
               // amount = Math.round(player.forcesToPlace / countries.length);
-              id = chosen.name;
-              amount = chosen.amount;
-              alreadyReinforced.push(id);              
-              console.log(`Reinforcing ${id} with ${amount} to attack `);
+              else {
+                id = chosen.name;
+                amount =
+                  player.algorithm === "b"
+                    ? Math.round(player.forcesToPlace / tryToGetCont.length)
+                    : chosen.amount;
+                alreadyReinforced.push(id);
+                console.log(`Reinforcing ${id} with ${amount} to attack `);
+              }
             }
             if (amount > player.forcesToPlace) amount = player.forcesToPlace;
             if (amount < 1 && player.forcesToPlace) amount = 1;
 
             let duration = fastForward ? (fastForward === 2 ? 0 : 200) : 1000;
+            console.log({ id, amount });
             setTimeout(() => {
               if (!fastForward)
                 flyToCountries({ ids: [id] }).then(() => {
@@ -2361,14 +2377,23 @@ function main({
         if (territory1v2 > forces1v2) sortedContinents = byTerritory;
         else sortedContinents = byForces;
       }
-      // console.log(sortedContinents)
+      // console.log(sortedContinents);
       if (!sortedContinents[0] || !+sortedContinents[0].percent) {
         return [];
       }
       function getCountries(continent) {
-        return continent.Countries.filter(x =>
-          player.territory.find(y => y.name === x)
-        )
+        if (!continent) return [];
+        let countries = continent.Countries.map(x => x);
+        countries
+          .map(x => x)
+          .forEach(c => {
+            let ca = getCanAttack(c);
+            ca.forEach(x => {
+              if (countries.indexOf(x) === -1) countries.push(x);
+            });
+          });
+        return countries
+          .filter(x => player.territory.find(y => y.name === x))
           .filter(
             x =>
               getCanAttack(x, player).filter(
@@ -2400,27 +2425,51 @@ function main({
           })
           .sort((a, b) => b.amount - a.amount);
       }
-      let countries = getCountries(sortedContinents[0]);
-      let filter = countries.filter(x => x.amount > -1);
+      let continent1 = getCountries(sortedContinents[0]);
+      let filter1 = continent1.filter(x => x.amount > -1);
       // console.log({ phase });
-      // console.log(
-      //   countries.map(x => `${x.name}:${x.amount}`),
-      //   filter.map(x => `${x.name}:${x.amount}`)
-      // );
-      if (!filter.length) {
-        let continent2 = getCountries(sortedContinents[1]).filter(
-          x => x.amount > 0
-        );
-        if (phase === 1) return [countries[0], ...continent2];
-        else return continent2;
-      } else return filter;
+      let continent2 = getCountries(sortedContinents[1]);
+      let filter2 = continent2.filter(x => x.amount > 0);
+      console.log(
+        "continent1: ",
+        continent1.map(x => `${x.name}:${x.amount}`)
+      );
+      console.log(
+        "filter1: ",
+        filter1.map(x => `${x.name}:${x.amount}`)
+      );
+      console.log(
+        "continent2: ",
+        continent2.map(x => `${x.name}:${x.amount}`)
+      );
+      console.log(
+        "filter2: ",
+        filter2.map(x => `${x.name}:${x.amount}`)
+      );
+      if (player.algorithm === "b")
+        return continent1.length ? continent1 : continent2;
+      if (!filter1.length) {
+        if (filter2.length) {
+          if (phase === 1) return [continent1[0], ...filter2];
+          else return filter2;
+        } else
+          return continent1.map(x => {
+            x.amount = Math.floor(player.forcesToPlace / continent1.length);
+            return x;
+          });
+      } else
+        return filter1.map(x => {
+          x.amount = Math.floor(player.forcesToPlace / filter1.length);
+          return x;
+        });
       //this doesn't take into account adjacent, or near adjacent territories
       //that have a lot of troops to attack into the continent with
     }
 
-    function shouldMoveTroopsAfterBattle(territory, player) {
+    function shouldMoveTroopsAfterBattle(territory, movingTo, player) {
       let ca = getCanAttack(territory.name, player);
       let f = territory.forces;
+      if (!getCanAttack(movingTo, player).length) return f > 2 ? 2 : 1;
       // console.log(territory.name, f, ca);
       if (!ca.length) return f - 1;
       else {
@@ -2434,24 +2483,24 @@ function main({
       // console.log("computerAttackPhase", player);
       return new Promise(res => {
         let countries = shouldTryToConquerContinent(player).map(x => x.name);
-        console.log("attack continent", countries);
+        // console.log("attack continent", countries);
         if (!countries.length) {
           countries = shouldReinforceContinent(player, true).map(
             x => x.country
           );
-          console.log("reinforce continent", countries);
+          // console.log("reinforce continent", countries);
         }
-        countries
-          .map(x => x)
-          .forEach(c => {
-            let ca = getCanAttack(c, player);
-            ca.filter(x => player.territory.find(y => y.name === x)).forEach(
-              x => {
-                console.log(x);
-                if (countries.indexOf(x) === -1) countries.push(x);
-              }
-            );
-          });
+        // countries
+        //   .map(x => x)
+        //   .forEach(c => {
+        //     let ca = getCanAttack(c, player);
+        //     ca.filter(x => player.territory.find(y => y.name === x)).forEach(
+        //       x => {
+        //         // console.log(x);
+        //         if (countries.indexOf(x) === -1) countries.push(x);
+        //       }
+        //     );
+        //   });
         let ts = player.territory.filter(
           x => countries.indexOf(x.name) !== -1 && x.forces > 2
         );
@@ -2558,65 +2607,68 @@ function main({
         ),
         move = sortedTerritory[0].extra,
         d = cmt.find(x => getCanAttack(x, player).length);
-      console.log(sortedTerritory, cmt);
-      console.log(`Pre-calc: should move ${move} from ${a} to ${d}`);
-      let tryToGetCont = shouldTryToConquerContinent(player).map(x => x.name);
+      if (player.algorithm !== "b") {
+        console.log("sortedTerritory:", sortedTerritory, "cmt:", cmt);
+        console.log(`Pre-calc: should move ${move} from ${a} to ${d}`);
+        let tryToGetCont = shouldTryToConquerContinent(player).map(x => x.name);
 
-      let shouldReinforce = shouldReinforceContinent(
-        player,
-        !tryToGetCont.length
-      );
-      console.log({ shouldReinforce, tryToGetCont });
-      if (shouldReinforce.length) {
-        let { country, amount } = shouldReinforce[0];
-        cmt = calcCanMoveTo(
-          country,
-          player.territory.map(t => t.name)
+        let shouldReinforce = shouldReinforceContinent(
+          player,
+          !tryToGetCont.length
         );
-        //find first index that can move from
-        let index = sortedTerritory.findIndex(t => cmt.find(c => c === t.name));
-        //compare index extra to move with country with most extra
-        if (index.extra > sortedTerritory[0].extra / 2) {
-          d = country;
-          move = index.extra;
-          console.log(
-            `Will reinforce ${country} by moving ${move} troops from ${a} to ${d}`
+        console.log({ shouldReinforce, tryToGetCont });
+        if (shouldReinforce.length) {
+          let { country, amount } = shouldReinforce[0];
+          cmt = calcCanMoveTo(
+            country,
+            player.territory.map(t => t.name)
           );
-        } else {
-          //find best country to move extra to
-          console.log(
-            "Should find best country to move extra to",
-            sortedTerritory[0],
-            tryToGetCont
+          //find first index that can move from
+          let index = sortedTerritory.findIndex(t =>
+            cmt.find(c => c === t.name)
           );
-        }
-      } else if (tryToGetCont.length) {
-        tryToGetCont
-          .map(x => x)
-          .forEach(c => {
-            //add in countries not within the continent
-            let ca = getCanAttack(c, player);
-            ca.filter(x => player.territory.find(y => y.name === x)).forEach(
-              x => {
-                if (!tryToGetCont.find(y => y === x)) tryToGetCont.push(x);
-              }
+          //compare index extra to move with country with most extra
+          if (index.extra > sortedTerritory[0].extra / 2) {
+            d = country;
+            move = index.extra;
+            console.log(
+              `Will reinforce ${country} by moving ${move} troops from ${a} to ${d}`
             );
-          });
-        if (tryToGetCont.length) {
-          d = cmt.find(c => tryToGetCont.indexOf(c) !== -1);
-          if (!d) {
+          } else {
+            //find best country to move extra to
+            console.log(
+              "Should find best country to move extra to",
+              sortedTerritory[0],
+              tryToGetCont
+            );
+          }
+        } else if (tryToGetCont.length) {
+          // tryToGetCont
+          //   .map(x => x)
+          //   .forEach(c => {
+          //     //add in countries not within the continent
+          //     let ca = getCanAttack(c, player);
+          //     ca.filter(x => player.territory.find(y => y.name === x)).forEach(
+          //       x => {
+          //         if (!tryToGetCont.find(y => y === x)) tryToGetCont.push(x);
+          //       }
+          //     );
+          //   });
+          // if (tryToGetCont.length) {
+          let newD = cmt.find(c => tryToGetCont.indexOf(c) !== -1);
+          if (!newD) {
             console.log("Re-calculating d");
-            d = tryToGetCont.find(
+            newD = tryToGetCont.find(
               x =>
                 calcCanMoveTo(
                   x,
                   player.territory.map(t => t.name)
                 ).length
             );
-            console.log({ d });
-            if (d) {
+            console.log({ newD });
+            if (newD) {
               cmt = calcCanMoveTo(
-                d,
+                newD,
                 player.territory.map(t => t.name)
               );
               let newT = cmt
@@ -2624,8 +2676,11 @@ function main({
                   return { name: t, extra: hasExtraTroops(t, player) };
                 })
                 .sort((a, b) => b.extra - a.extra);
-              if (cmt.indexOf(a) === -1) a = newT[0].name;
-              move = newT[0].extra;
+              if (newT[0].extra > sortedTerritory[0].extra / 2) {
+                d = newD;
+                a = newT[0].name;
+                move = newT[0].extra;
+              }
             }
           }
           console.log(
@@ -3115,12 +3170,10 @@ function main({
         //The highest goes with he highest and the lowest goes with the next lowest.
         //For every die beaten, a player looses a troop.
         //A player can retreat from a battle at any point, however this must be before any dice are thrown.
-        let aDice = rollDice(
-          getForces(aggressor) > 3 ? 3 : getForces(aggressor)
-        ).sort((a, b) => b - a);
-        let dDice = rollDice(
-          getForces(defender) > 2 ? 2 : getForces(defender)
-        ).sort((a, b) => b - a);
+        let aF = Math.round(getForces(aggressor) / troopFactor),
+          dF = Math.round(getForces(defender) / troopFactor);
+        let aDice = rollDice(aF > 3 ? 3 : aF).sort((a, b) => b - a);
+        let dDice = rollDice(dF > 2 ? 2 : dF).sort((a, b) => b - a);
         let battleDetails = document.getElementById("battleDetails");
         if (!isComputer && !fastForward) {
           if (battleDetails) {
@@ -3169,7 +3222,7 @@ function main({
           winner = diceRoll2.winner;
           diceRoll2.lost === "a" ? (aLostCount += 1) : (dLostCount += 1);
         }
-        // if (!fastForward)
+         if (!fastForward)
         updateMap([aggressor, defender]);
         return new Promise(res => {
           if (aLostCount) {
@@ -3271,9 +3324,12 @@ function main({
                                 });
                                 moveTroops({
                                   move:
-                                    isComputer && wTerritory.forces >= 4
+                                    isComputer &&
+                                    wTerritory.forces >= 4 &&
+                                    player.algorithm !== "b"
                                       ? shouldMoveTroopsAfterBattle(
                                           wTerritory,
+                                          defender,
                                           player
                                         )
                                       : wTerritory.forces - 1,
@@ -3297,11 +3353,11 @@ function main({
                       });
                     }
                   },
-                  fastForward ? (fastForward === 2 ? 30 : 150) : 1000
+                  fastForward ? (fastForward === 2 ? 0 : 150) : 1000
                 );
               } else res(winner);
             },
-            fastForward ? (fastForward === 2 ? 10 : 50) : 500
+            fastForward ? (fastForward === 2 ? 0 : 50) : 500
           );
         });
 
@@ -3313,7 +3369,7 @@ function main({
               p.territory.find(t => t.name === d.id)
             );
             let territory = player.territory.find(t => t.name === d.id);
-            territory.forces -= 1;
+            territory.forces -= 1 * troopFactor;
             if (territory.forces < 1)
               winner = {
                 role: "aggressor",
@@ -3325,9 +3381,10 @@ function main({
               p.territory.find(t => t.name === a.id)
             );
             let territory = player.territory.find(t => t.name === a.id);
-            territory.forces -= 1;
-            if (territory.forces < 2) {
-              if (territory.forces < 1) territory.forces = 1;
+            territory.forces -= 1 * troopFactor;
+            if (territory.forces < 2 * troopFactor) {
+              if (territory.forces < 1 * troopFactor)
+                territory.forces = 1 * troopFactor;
               winner = {
                 role: "defender",
                 name: d.country

@@ -239,7 +239,7 @@ function main({
   //main global variables
   var scene = viewer.scene;
   let troopFactor = 1;
-  let gameIsOver=false;
+  let gameIsOver = false;
   let globeSpinInterval;
   var context = scene.context;
   if (endUserOptions.debug) {
@@ -346,12 +346,12 @@ function main({
         .then(function() {
           loadingIndicator.style.display = "none";
           globeSpinInterval = setInterval(() => {
-              spinGlobe(0.01);
-            }, 40);
+            spinGlobe(0.01);
+          }, 40);
           addContinentBorders().then(() => {
-        drawCanAttackPaths();
-          initializeGameOptions();
-        })
+            drawCanAttackPaths();
+            initializeGameOptions();
+          });
         })
         .otherwise(function(error) {
           showLoadError(source, error);
@@ -735,6 +735,7 @@ function main({
         return p._instanceIds[0] === id + "_corridor_hole";
       }
     });
+
     return {
       existingPolygon,
       existingCorridor,
@@ -749,6 +750,7 @@ function main({
       existingCorridor,
       existingHoles
     } = getExistingPrimitive(id);
+
     if (existingPolygon) primitives.remove(existingPolygon);
     if (existingCorridor) primitives.remove(existingCorridor);
     if (existingHoles.length) existingHoles.forEach(h => primitives.remove(h));
@@ -933,7 +935,8 @@ function main({
   }
 
   function spinGlobe(v) {
-    viewer.scene.camera.rotate(Cesium.Cartesian3.UNIT_Z, v);
+    if (!userManuallyMoved)
+      viewer.scene.camera.rotate(Cesium.Cartesian3.UNIT_Z, v);
   }
 
   function initGameMap() {
@@ -960,26 +963,26 @@ function main({
         filter.forEach(o => {
           setTimeout(() => {
             spinGlobe(0.02);
-            // removePrimitive(o.id).then(() => {
-            //   createPrimitive({
-            //     cartesian: o.coords,
-            //     id: o.id,
-            //     height,
-            //     fillColor: color,
-            //     strokeColor: color
-            //   });
-            // });
+            removePrimitive(o.id).then(() => {
+              createPrimitive({
+                cartesian: o.coords,
+                id: o.id,
+                height,
+                fillColor: color,
+                strokeColor: color
+              });
+            });
 
-            // createPrimitive({
-            //   cartesian: o.coords,
-            //   id: o.id + "_transparent",
-            //   height,
-            //   fillColor: color,
-            //   strokeColor: color,
-            //   fillOpacity: 0.1,
-            //   strokeOpacity: 0.2,
-            //   dontShow: true
-            // });
+            createPrimitive({
+              cartesian: o.coords,
+              id: o.id + "_transparent",
+              height,
+              fillColor: color,
+              strokeColor: color,
+              fillOpacity: 0.1,
+              strokeOpacity: 0.2,
+              dontShow: true
+            });
 
             let continent = continents.find(
               x => x.Countries.indexOf(o.id.split("_")[0]) !== -1
@@ -1033,7 +1036,7 @@ function main({
   }
 
   function updateMap(ids) {
-    if(gameIsOver)return;
+    if (gameIsOver) return;
     // console.log("updateMap", ids);
     let filteredLabels = countryLabels.entities.values,
       filteredCountries = countries;
@@ -1042,7 +1045,6 @@ function main({
       filteredCountries = filteredCountries.filter(c => ids.indexOf(c) !== -1);
     }
     filteredLabels.forEach(l => {
-      // let { x, y } = l.position._value;
       l.label.text = getForces(l.name).toString();
       let c = getPlayerColor(l.name);
       if (c) l.label.backgroundColor = new Cesium.Color(c[0], c[1], c[2], 1);
@@ -1052,101 +1054,53 @@ function main({
         getForces(l.name) * (30000 / troopFactor) + 20000
       );
     });
-    // let primitives = viewer.scene.primitives._primitives;
-    // primitives.forEach(p => {
-    //   if (p._instanceIds) p.destroy();
-    // });
-    // let finished = [],
-    //   totalPrimitives = 0;
-    // filteredCountries.forEach((c, i) => {
-    //   let color = getPlayerColor(c);
-    //   let height = getForces(c) * (30000 / troopFactor);
-    //   let filter = countryCoords.filter(x => x.id.split("_")[0] === c);
-    //   totalPrimitives += filter.length;
-    //   if (filter.length)
-    //     filter.forEach(o => {
-    //       setTimeout(() => {
-    //         removePrimitive(o.id).then(() => {
-    //           createPrimitive({
-    //             cartesian: o.coords,
-    //             id: o.id,
-    //             height,
-    //             fillColor: color,
-    //             strokeColor: color
-    //           }).then(() => {
-    //             finished.push(o.id);
-    //           });
-    //         });
-    //         removePrimitive(o.id + "_transparent").then(() => {
-    //           createPrimitive({
-    //             cartesian: o.coords,
-    //             id: o.id + "_transparent",
-    //             height,
-    //             fillColor: color,
-    //             strokeColor: color,
-    //             fillOpacity: 0.1,
-    //             strokeOpacity: 0.2,
-    //             dontShow: true
-    //           });
-    //         });
-    //       }, 5 * (i + 1));
-    //     });
-    // });
 
-    return new Promise(res => {
-      // let interval = setInterval(() => {
-      // console.log(totalPrimitives, finished.length);
-      // if (totalPrimitives === finished.length) {
-      // clearInterval(interval);
-      res(true);
-      // }
-      // }, 3);
+    let finished = [],
+      totalPrimitives = 0;
+    filteredCountries.forEach((c, i) => {
+      let color = getPlayerColor(c);
+      let height = getForces(c) * (30000 / troopFactor);
+      let filter = countryCoords.filter(x => x.id.split("_")[0] === c);
+      totalPrimitives += filter.length;
+      if (filter.length)
+        filter.forEach(o => {
+          setTimeout(() => {
+            removePrimitive(o.id).then(() => {
+              createPrimitive({
+                cartesian: o.coords,
+                id: o.id,
+                height,
+                fillColor: color,
+                strokeColor: color
+              }).then(() => {
+                finished.push(o.id);
+              });
+            });
+            removePrimitive(o.id + "_transparent").then(() => {
+              createPrimitive({
+                cartesian: o.coords,
+                id: o.id + "_transparent",
+                height,
+                fillColor: color,
+                strokeColor: color,
+                fillOpacity: 0.1,
+                strokeOpacity: 0.2,
+                dontShow: true
+              });
+            });
+          }, 5 * (i + 1));
+        });
     });
 
-    // console.log(primitivesToBeDestroyed);
-    // primitivesToBeDestroyed.forEach(p=>p.destroy())
-    // primitives.forEach(p => {
-    //   if (!p._instanceIds || !p._instanceIds.length) return;
-    //   let split = p._instanceIds[0].split("_");
-    //   let id = split[0],
-    //     type = split[1];
-    //   console.log(id, type, height, cartesian);
-
-    //   if (type === "polygon")
-    //     p.geometryInstances = new Cesium.GeometryInstance({
-    //       id: id + "_" + type,
-    //       geometry: Cesium.PolygonGeometry.createGeometry(
-    //         new Cesium.PolygonGeometry({
-    //           polygonHierarchy: new Cesium.PolygonHierarchy(cartesian),
-    //           height
-    //         })
-    //       )
-    //     });
-    //   else if (type === "corridor")
-    //     p.geometryInstances = new Cesium.GeometryInstance({
-    //       id: id + "_" + type,
-    //       geometry: Cesium.CorridorGeometry.createGeometry(
-    //         new Cesium.CorridorGeometry({
-    //           positions: cartesian,
-    //           width: 8000,
-    //           extrudedHeight: height + 10000
-    //         })
-    //       )
-    //     });
-    // });
-    // countryEntities.entities.values.forEach(e => {
-    //   // console.log(e.name, getForces(e.name));
-    //   // if (e.polygon) e.polygon.extrudedHeight = getForces(e.name) * 30000;
-    //   if (e.polygon) e.polygon.height = getForces(e.name) * 30000;
-    //   if (e.corridor)
-    //     e.corridor.extrudedHeight = getForces(e.name) * 30000 + 10000;
-    // });
-    // countryBorders.entities.values.forEach(e => {
-    //   // console.log(e.name, getForces(e.name));
-    //   if (e.polygon) e.polygon.extrudedHeight = getForces(e.name) * 30000;
-    //   if (e.corridor)
-    //     e.corridor.extrudedHeight = getForces(e.name) * 30000 + 10000;
-    // });
+    return new Promise(res => {
+      let interval = setInterval(() => {
+        // console.log(totalPrimitives, finished.length);
+        if (totalPrimitives === finished.length) {
+          clearInterval(interval);
+          res(true);
+        }
+      }, 3);
+    });
   }
 
   function flyToCountries({ ids, pitch = -2 * Math.PI, range = 10000000 }) {
@@ -1198,10 +1152,25 @@ function main({
     });
   }
 
+  let isMoving;
+  viewer.screenSpaceEventHandler.setInputAction(function() {
+    userManuallyMoved = true;
+  }, Cesium.ScreenSpaceEventType.LEFT_DOWN);
+  viewer.screenSpaceEventHandler.setInputAction(function() {
+    if (!isMoving) userManuallyMoved = false;
+  }, Cesium.ScreenSpaceEventType.LEFT_UP);
+  viewer.camera.moveStart.addEventListener(function() {
+    isMoving = true;
+  });
+  viewer.camera.moveEnd.addEventListener(function() {
+    isMoving = false;
+    userManuallyMoved = false;
+  });
+
   let showContinents = true; //false;
 
   function initGame(names, prevGame) {
-    clearInterval(globeSpinInterval)
+    clearInterval(globeSpinInterval);
     let { humans, robots } = names;
     let gameLog = {
       log: [],
@@ -1598,34 +1567,34 @@ function main({
       addCountryLabels();
       // addContinentBorders().then(() => {
       //   drawCanAttackPaths();
-        setTimeout(() => {
-          toggleContinents();
-          initGameMap().then(() => {
-            // console.log("starting game");
-            setCardTradeInHandler();
-            setContinentsToggleHandler();
-            setGameLogToggleHandler();
-            setDetailsToggleHandler();
-            updateSummary();
+      setTimeout(() => {
+        toggleContinents();
+        initGameMap().then(() => {
+          // console.log("starting game");
+          setCardTradeInHandler();
+          setContinentsToggleHandler();
+          setGameLogToggleHandler();
+          setDetailsToggleHandler();
+          updateSummary();
+          toggleGameDetails();
+          setTimeout(() => {
+            if (!prevGame) nextPlayersTurn();
             toggleGameDetails();
-            setTimeout(() => {
-              if (!prevGame) nextPlayersTurn();
-              toggleGameDetails();
-              showGameStuff();
-              if (prevGame) {
-                let player = players[currentPlayersTurn];
-                updateContainerAndText(player);
-                if (player.isComputer) {
-                  fastForwardButton.style.display = "block";
-                  doComputerPlayerTurn(player);
-                } else {
-                  nextPhaseButton.style.display = "block";
-                  updatePlayersCards();
-                }
+            showGameStuff();
+            if (prevGame) {
+              let player = players[currentPlayersTurn];
+              updateContainerAndText(player);
+              if (player.isComputer) {
+                fastForwardButton.style.display = "block";
+                doComputerPlayerTurn(player);
+              } else {
+                nextPhaseButton.style.display = "block";
+                updatePlayersCards();
               }
-            }, 4000);
-          });
-        }, 500);
+            }
+          }, 4000);
+        });
+      }, 500);
       // });
     });
 
@@ -2759,21 +2728,6 @@ function main({
       Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK
     );
 
-    let isMoving;
-    viewer.screenSpaceEventHandler.setInputAction(function() {
-      userManuallyMoved = true;
-    }, Cesium.ScreenSpaceEventType.LEFT_DOWN);
-    viewer.screenSpaceEventHandler.setInputAction(function() {
-      if (!isMoving) userManuallyMoved = false;
-    }, Cesium.ScreenSpaceEventType.LEFT_UP);
-    viewer.camera.moveStart.addEventListener(function() {
-      isMoving = true;
-    });
-    viewer.camera.moveEnd.addEventListener(function() {
-      isMoving = false;
-      userManuallyMoved = false;
-    });
-
     let multiCountryAssault = [],
       isDoingMAC;
 
@@ -3610,8 +3564,7 @@ function main({
     }
 
     function endGame(winner) {
-
-      gameIsOver=true;
+      gameIsOver = true;
       localStorage.removeItem("prevGame");
       viewer.scene.camera.flyHome(1);
       fastForward = 0;
@@ -3624,9 +3577,9 @@ function main({
       playersDefeatedBy.forEach(x => {
         text += `<div><span style="font-weight:bold;color:${integerToRGB(
           x.by.color
-        )}">${
-          x.by.name
-        }(${x.by.algorithm})</span> killed <span style="font-weight:bold;color:${integerToRGB(
+        )}">${x.by.name}(${
+          x.by.algorithm
+        })</span> killed <span style="font-weight:bold;color:${integerToRGB(
           x.defeated.color
         )}">${x.defeated.name}(${x.defeated.algorithm})</span></div>`;
       });
@@ -3635,9 +3588,8 @@ function main({
           continentsFirstControlledBy[k].color
         )}">${continentsFirstControlledBy[k].name}</span></div>`;
       });
-      
-      showAlert(text, winner, 2400000).then(() => {
 
+      showAlert(text, winner, 2400000).then(() => {
         // screenSpaceHandler.removeInputAction(
         //   Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK
         // );
@@ -3665,62 +3617,62 @@ function main({
         //     ];
         // });
         // Promise.all(promises).then(res => {
-          // players = [];
-          // document.getElementById("startGame").style.display = "block";
-          let gameInstructions = document.getElementById("gameInstructions");
-          if (gameInstructions) gameInstructions.style.display = "none";
-          let gameDetails = document.getElementById("gameDetails");
-          if (gameDetails) gameDetails.style.display = "none";
-          let continentsButton = document.getElementById("continents");
-          if (continentsButton) {
-            continentsButton.removeEventListener("click", toggleContinents);
-            continentsButton.style.display = "none";
-          }
-          let detailsToggle = document.getElementById("gameDetailsToggle");
-          if (detailsToggle) {
-            detailsToggle.style.display = "none";
-            detailsToggle.removeEventListener("click", toggleGameDetails);
-          }
-          let logToggle = document.getElementById("gameLogToggle");
-          if (logToggle) {
-            logToggle.style.display = "none";
-            logToggle.removeEventListener("click", toggleGameLog);
-          }
-          let battleContainer = document.getElementById("battleContainer");
-          if (battleContainer) {
-            battleContainer.innerHTML = "";
-            battleContainer.style.display = "none";
-          }
-          let moveTroopsContainer = document.getElementById(
-            "moveTroopsContainer"
-          );
-          if (moveTroopsContainer) {
-            moveTroopsContainer.innerHTML = "";
-            moveTroopsContainer.style.display = "none";
-          }
-          let playerCards = document.getElementById("playerCards");
-          if (playerCards) {
-            playerCards.style.display = "none";
-            playerCards.innerHTML = "";
-            playerCards.removeEventListener("click", viewCards);
-          }
-          let fastForwardButton = document.getElementById("fastForward");
-          if (fastForwardButton) {
-            fastForwardButton.style.display = "none";
-            fastForwardButton.innerHTML = "";
-          }
-          let round = document.getElementById("round");
-          if (round) {
-            round.style.display = "none";
-            round.innerHTML = "";
-          }
-          let playersTurn = document.getElementById("playersTurn");
-          if (playersTurn) {
-            playersTurn.style.display = "none";
-            playersTurn.innerHTML = "";
-          }
-          //initializeGameOptions();
-          // window.location.reload();
+        // players = [];
+        // document.getElementById("startGame").style.display = "block";
+        let gameInstructions = document.getElementById("gameInstructions");
+        if (gameInstructions) gameInstructions.style.display = "none";
+        let gameDetails = document.getElementById("gameDetails");
+        if (gameDetails) gameDetails.style.display = "none";
+        let continentsButton = document.getElementById("continents");
+        if (continentsButton) {
+          continentsButton.removeEventListener("click", toggleContinents);
+          continentsButton.style.display = "none";
+        }
+        let detailsToggle = document.getElementById("gameDetailsToggle");
+        if (detailsToggle) {
+          detailsToggle.style.display = "none";
+          detailsToggle.removeEventListener("click", toggleGameDetails);
+        }
+        let logToggle = document.getElementById("gameLogToggle");
+        if (logToggle) {
+          logToggle.style.display = "none";
+          logToggle.removeEventListener("click", toggleGameLog);
+        }
+        let battleContainer = document.getElementById("battleContainer");
+        if (battleContainer) {
+          battleContainer.innerHTML = "";
+          battleContainer.style.display = "none";
+        }
+        let moveTroopsContainer = document.getElementById(
+          "moveTroopsContainer"
+        );
+        if (moveTroopsContainer) {
+          moveTroopsContainer.innerHTML = "";
+          moveTroopsContainer.style.display = "none";
+        }
+        let playerCards = document.getElementById("playerCards");
+        if (playerCards) {
+          playerCards.style.display = "none";
+          playerCards.innerHTML = "";
+          playerCards.removeEventListener("click", viewCards);
+        }
+        let fastForwardButton = document.getElementById("fastForward");
+        if (fastForwardButton) {
+          fastForwardButton.style.display = "none";
+          fastForwardButton.innerHTML = "";
+        }
+        let round = document.getElementById("round");
+        if (round) {
+          round.style.display = "none";
+          round.innerHTML = "";
+        }
+        let playersTurn = document.getElementById("playersTurn");
+        if (playersTurn) {
+          playersTurn.style.display = "none";
+          playersTurn.innerHTML = "";
+        }
+        //initializeGameOptions();
+        // window.location.reload();
         // });
       });
     }

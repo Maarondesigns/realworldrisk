@@ -8,17 +8,13 @@ Changes/Features:
 
 - manual placement
 - make back of card image
-- find image/icon for game log toggle (GLT)
 - set home position or home fly to continent, or country with most forces
 - attack dice number / move troops number (max dice 3, move troops min = dice num)
 - animate continent border when new player controls it
-- create some kind of end game animation (right now it just alerts)
 
 Better AI:
 
-- Move troops from one continent to another for reinforcement
 - Continue with multiple strategies if they are in a good position. Large troop counts can get stuck in countries they aren't considering.
-- Don't spread out reinforcements to attack or reinforce, instead make some kind of strategy
 - Attack players adjacent continents or sabotage player doing too well if it's not too risky
 - Think about nearby countries with alot of troops that could attack or that they could merge into existing area
 - Take out weak player and steal cards if it's not too risky
@@ -29,7 +25,6 @@ Better UI:
 - trade in cards is clunky
 - current player / phase button could be better (player image is just silhouette)
 - battle (show players / bigger dice / animations)
-- show path when moving troops (this requires find shortest path function)
 
 Other:
 
@@ -37,7 +32,6 @@ Other:
 
 Long term ideas:
 
-- Chart showing troop / territory change over time
 - Rearrangeable/resizeable UI elements (or choose from preset layouts)
 - Player characters with animations or at least images for win/lose/dead
 - save user data for rank/achievments/etc.

@@ -693,6 +693,6 @@
   },
   {
     "id": "MNE",
-    "canAttack": ["BIH", "ALB", "HRV", "SRB"]
+    "canAttack": ["BIH", "ALB", "HRV", "SRB", "XK"]
   }
 ]

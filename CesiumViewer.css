@@ -124,6 +124,11 @@ button.cesium-button.cesium-toolbar-button[data-bind="attr: { title: buttonToolt
   border-style: solid;
   border-radius: 10px;
   cursor: pointer;
+  width: fit-content;
+  max-width: calc(100% - 110px);
+  max-height: 75%;
+  overflow-y: auto;
+  z-index: 99;
 }
 
 .fade-in {
@@ -222,7 +227,8 @@ button.cesium-button.cesium-toolbar-button[data-bind="attr: { title: buttonToolt
   width: 28px;
 }
 #gameLogToggle,
-#gameDetailsToggle {
+#gameDetailsToggle,
+#gameChartToggle {
   display: none;
   position: absolute;
   bottom: 5px;
@@ -250,10 +256,17 @@ button.cesium-button.cesium-toolbar-button[data-bind="attr: { title: buttonToolt
   background-image: url(Images/game-log.png);
   background-size: cover;
 }
+#gameChartToggle {
+  z-index: 98;
+  left: 125px;
+  background-image: url(Images/chart.png);
+  background-size: cover;
+}
 
 #continents:hover,
 #gameLogToggle:hover,
-#gameDetailsToggle:hover {
+#gameDetailsToggle:hover,
+#gameChartToggle:hover {
   background-color: rgb(255, 86, 86);
   box-shadow: 0 0 15px white;
 }
@@ -848,4 +861,37 @@ button:hover {
   padding: 0 3px;
   box-shadow: 0 0 4px black;
   background: rgba(255, 255, 255, 0.1);
+}
+
+/* D3 Line Chart */
+#gameChart {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 90%;
+  max-height: 90%;
+  z-index: -1;
+  background: white;
+  border-radius: 10px;
+}
+.line {
+  fill: none;
+  stroke: #ffab00;
+  stroke-width: 3;
+}
+
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
+
+.dot {
+  fill: #ffab00;
+  stroke: #fff;
+}
+
+.focus circle {
+  fill: none;
+  stroke: steelblue;
 }

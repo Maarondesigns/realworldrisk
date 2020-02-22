@@ -2212,7 +2212,7 @@ function main({
 
     function nextPlayersTurn() {
       removeAllPaths();
-      if (needsToBeUpdated.length) udpateMap(needsToBeUpdated);
+      if (needsToBeUpdated.length) updateMap(needsToBeUpdated);
       updateGameChart();
       turnOverButton.style.display = "none";
       if (playerGetsACard) {
@@ -4046,7 +4046,7 @@ function main({
     }
 
     function endGame(winner) {
-      if (needsToBeUpdated.length) udpateMap(needsToBeUpdated);
+      if (needsToBeUpdated.length) updateMap(needsToBeUpdated);
       removeAllPaths();
       updateGameChart();
       gameIsOver = true;

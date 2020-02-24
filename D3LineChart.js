@@ -1,11 +1,19 @@
-let userSelected = "Total_Forces";
+let userSelected = "Total_Forces",
+  resizeListenerSet;
 function D3LineChart(lineChartData, playerColors) {
-  // set the dimensions and margins of the graph
-  var margin = { top: 90, right: 230, bottom: 50, left: 50 },
-    width = window.innerWidth * 0.7 - margin.left - margin.right,
-    height = window.innerHeight * 0.9 - margin.top - margin.bottom;
-
   function drawChart() {
+    // set the dimensions and margins of the graph
+    let wW = window.innerWidth,
+      wH = window.innerHeight,
+      portrait = wW < 500;
+    var margin = {
+        top: portrait ? wH / 1.8 : 90,
+        right: portrait ? 50 : 230,
+        bottom: 50,
+        left: 50
+      },
+      width = wW * 0.9 - margin.left - margin.right,
+      height = wH * 0.8 - margin.top - margin.bottom;
     let data = lineChartData[userSelected];
     // append the svg object to the body of the page
     let gameChart = d3.select("#gameChart");
@@ -17,7 +25,8 @@ function D3LineChart(lineChartData, playerColors) {
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
       .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+      .style("font-size", "13px");
 
     // Parse the Data
     // d3.csv(
@@ -68,18 +77,18 @@ function D3LineChart(lineChartData, playerColors) {
     // Add X axis label:
     svg
       .append("text")
-      .attr("text-anchor", "end")
+      .attr("text-anchor", "middle")
       .attr("x", width / 2)
       .attr("y", height + 40)
       .text("Round");
     // Add Y axis label:
     svg
       .append("text")
-      .attr("text-anchor", "end")
-      .attr("x", width / 2)
-      .attr("y", -50)
+      .attr("text-anchor", "middle")
+      .attr("x", (width + margin.left + margin.right) / 2)
+      .attr("y", -margin.top + 40)
       .text("Game Chart")
-      .attr("text-anchor", "start");
+      .style("font-size", "16px");
 
     ["Total_Forces", "Territory"].forEach((text, i) => {
       let g = svg.append("g");
@@ -90,7 +99,7 @@ function D3LineChart(lineChartData, playerColors) {
       g.append("text")
         .attr("text-anchor", "middle")
         .attr("x", w * i + w * rMargin + rWidth / 2)
-        .attr("y", -15)
+        .attr("y", -margin.top + 75)
         .text(text.replace("_", " "))
         .style("color", userSelected === text ? "red" : "gray")
         .style("font-weight", userSelected === text ? "bold" : "");
@@ -99,7 +108,7 @@ function D3LineChart(lineChartData, playerColors) {
         .attr("width", rWidth)
         .attr("height", 25)
         .attr("x", w * i + w * rMargin)
-        .attr("y", -30)
+        .attr("y", -margin.top + 60)
         .attr("rx", 5)
         .attr("fill", "white")
         .attr("fill-opacity", 0.1)
@@ -220,14 +229,22 @@ function D3LineChart(lineChartData, playerColors) {
     //////////
     // Add one dot in the legend for each name.
     var size = 20;
+    let myrectX = width + size * 0.2;
+    let mylabelsX = width + size * 0.2 + size * 1.2;
+    if (portrait) {
+      myrectX = size * 0.2;
+      mylabelsX = size * 0.2 + size * 1.2;
+    }
     svg
       .selectAll("myrect")
       .data(keys)
       .enter()
       .append("rect")
-      .attr("x", width + size * 0.2)
+      .attr("x", myrectX)
       .attr("y", function(d, i) {
-        return 10 + i * (size + 5);
+        let y = 10 + i * (size + 5);
+        if (portrait) y -= margin.top - 90;
+        return y;
       }) // 100 is where the first dot appears. 25 is the distance between dots
       .attr("width", size)
       .attr("height", size)
@@ -242,9 +259,11 @@ function D3LineChart(lineChartData, playerColors) {
       .data(keys)
       .enter()
       .append("text")
-      .attr("x", width + size * 0.2 + size * 1.2)
+      .attr("x", mylabelsX)
       .attr("y", function(d, i) {
-        return 10 + i * (size + 5) + size / 2;
+        let y = 10 + i * (size + 5) + size / 2;
+        if (portrait) y -= margin.top - 90;
+        return y;
       }) // 100 is where the first dot appears. 25 is the distance between dots
       .style("fill", function(d) {
         return playerColors[d];
@@ -258,6 +277,7 @@ function D3LineChart(lineChartData, playerColors) {
       .on("mouseleave", noHighlight);
     // });
   }
-
   drawChart();
+  if (!resizeListenerSet) window.addEventListener("resize", drawChart);
+  resizeListenerSet = true;
 }

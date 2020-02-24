@@ -1401,7 +1401,7 @@ function main({
         let initialAmount =
           Math.ceil(countries.length / players.length) * (3 * troopFactor);
         let left = initialAmount - total;
-        // if (p.name !== "Player 1") left = 1;
+        // if (p.name === "Player 1") left = 1000;
         while (left > 0) {
           p.territory[Math.floor(Math.random() * p.territory.length)].forces +=
             1 * troopFactor;
@@ -1584,6 +1584,7 @@ function main({
       });
     }
 
+    if (prevGame) lineChartData = prevGame.lineChartData;
     //game global variables
     let currentPlayersTurn,
       firstPlayer,
@@ -1855,7 +1856,8 @@ function main({
           playerGetsACard,
           battleOccurred,
           phase,
-          round
+          round,
+          lineChartData
         })
       );
     }
@@ -2432,7 +2434,6 @@ function main({
       //if it can't attack anyone deadends.push
       let paths = [[start]];
       function incrementPaths() {
-        // console.log({ paths });
         let l = paths.length;
         for (let i = 0; i < l; i++) {
           let p = paths[i];
@@ -2469,9 +2470,8 @@ function main({
         }
         paths = paths.filter(x => x);
       }
-      let i = 0;
-      while (paths.length && i < 10) {
-        i += 1;
+
+      while (paths.length > 0 && paths.length < 10000) {
         incrementPaths();
       }
 
@@ -2504,14 +2504,14 @@ function main({
             }
           }
         }
-        drawPath(returnVal, {
-          id: "bestPath",
-          width: 10,
-          color: Cesium.Color.BLUE
-        });
-        setTimeout(() => {
-          removePath("bestPath");
-        }, 3000);
+        // drawPath(returnVal, {
+        //   id: "bestPath",
+        //   width: 10,
+        //   color: Cesium.Color.BLUE
+        // });
+        // setTimeout(() => {
+        //   removePath("bestPath");
+        // }, 3000);
         return returnVal;
       }
     }

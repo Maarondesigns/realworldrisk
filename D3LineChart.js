@@ -5,9 +5,10 @@ function D3LineChart(lineChartData, playerColors) {
     // set the dimensions and margins of the graph
     let wW = window.innerWidth,
       wH = window.innerHeight,
-      portrait = wW < 500;
+      portrait = wW < 500,
+      smallScreen = portrait || wH < 500;
     var margin = {
-        top: portrait ? wH / 1.8 : 90,
+        top: portrait ? wH / 2.5 : 90,
         right: portrait ? 50 : 230,
         bottom: 50,
         left: 50
@@ -26,7 +27,7 @@ function D3LineChart(lineChartData, playerColors) {
       .attr("height", height + margin.top + margin.bottom)
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-      .style("font-size", "13px");
+      .style("font-size", smallScreen ? "12px" : "13px");
 
     // Parse the Data
     // d3.csv(
@@ -84,7 +85,7 @@ function D3LineChart(lineChartData, playerColors) {
     // Add Y axis label:
     svg
       .append("text")
-      .attr("text-anchor", "middle")
+      .attr("text-anchor", "end")
       .attr("x", (width + margin.left + margin.right) / 2)
       .attr("y", -margin.top + 40)
       .text("Game Chart")
@@ -95,6 +96,7 @@ function D3LineChart(lineChartData, playerColors) {
       let w = width / 2;
       let rMargin = 0.3;
       let rWidth = w * (rMargin * 2);
+      if (rWidth < 100) rWidth = 100;
 
       g.append("text")
         .attr("text-anchor", "middle")
@@ -216,7 +218,7 @@ function D3LineChart(lineChartData, playerColors) {
     var highlight = function(d) {
       console.log(d);
       // reduce opacity of all groups
-      d3.selectAll(".myArea").style("opacity", 0.1);
+      d3.selectAll(".myArea").style("opacity", 0.15);
       // expect the one that is hovered
       d3.select("." + d.replace(" ", "_")).style("opacity", 1);
     };
@@ -228,7 +230,7 @@ function D3LineChart(lineChartData, playerColors) {
     // LEGEND //
     //////////
     // Add one dot in the legend for each name.
-    var size = 20;
+    var size = wH < 500 ? 15 : 20;
     let myrectX = width + size * 0.2;
     let mylabelsX = width + size * 0.2 + size * 1.2;
     if (portrait) {
@@ -240,8 +242,12 @@ function D3LineChart(lineChartData, playerColors) {
       .data(keys)
       .enter()
       .append("rect")
-      .attr("x", myrectX)
+      .attr("x", function(d, i) {
+        if (portrait && i > 5) return myrectX + width / 2;
+        return myrectX;
+      })
       .attr("y", function(d, i) {
+        if (portrait && i > 5) i -= 6;
         let y = 10 + i * (size + 5);
         if (portrait) y -= margin.top - 90;
         return y;
@@ -259,8 +265,12 @@ function D3LineChart(lineChartData, playerColors) {
       .data(keys)
       .enter()
       .append("text")
-      .attr("x", mylabelsX)
+      .attr("x", function(d, i) {
+        if (portrait && i > 5) return mylabelsX + width / 2;
+        return mylabelsX;
+      })
       .attr("y", function(d, i) {
+        if (portrait && i > 5) i -= 6;
         let y = 10 + i * (size + 5) + size / 2;
         if (portrait) y -= margin.top - 90;
         return y;

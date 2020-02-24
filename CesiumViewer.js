@@ -1476,13 +1476,13 @@ function main({
     }
 
     function showAttackButtons(id, player) {
-      let thisContinent = continents.find(c => c.Countries.indexOf(id) !== -1);
-      let continentBorders = findContinentBorders(thisContinent);
-      let through = thisContinent.Countries.filter(
-        c => !player.territory.find(x => x.name === c)
-      );
-      let bestPath = findBestPathThrough(id, through, continentBorders, player);
-      console.log({ bestPath });
+      // let thisContinent = continents.find(c => c.Countries.indexOf(id) !== -1);
+      // let continentBorders = findContinentBorders(thisContinent);
+      // let through = thisContinent.Countries.filter(
+      //   c => !player.territory.find(x => x.name === c)
+      // );
+      // let bestPath = findBestPathThrough(id, through, continentBorders, player);
+      // console.log({ bestPath });
       cantClick = true;
       let attackButtonsContainer = document.getElementById("attackButtons");
       attackButtonsContainer.style.display = "grid";

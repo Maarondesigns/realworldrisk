@@ -156,20 +156,20 @@ function main({
   //     });
   //   }
   // });
-  let naturalEarth = new Cesium.ProviderViewModel({
-    name: "Natural Earth",
-    iconUrl: Cesium.buildModuleUrl(
-      "Widgets/Images/ImageryProviders/naturalEarthII.png"
-    ),
-    tooltip:
-      "Natural Earth II, darkened for contrast.\nhttp://www.naturalearthdata.com/",
-    creationFunction: function() {
-      return new Cesium.TileMapServiceImageryProvider({
-        // url: Cesium.buildModuleUrl("Assets/Textures/NaturalEarthII")
-        url: "data/mapTiles/naturalEarthSmall"
-      });
-    }
-  });
+  // let naturalEarth = new Cesium.ProviderViewModel({
+  //   name: "Natural Earth",
+  //   iconUrl: Cesium.buildModuleUrl(
+  //     "Widgets/Images/ImageryProviders/naturalEarthII.png"
+  //   ),
+  //   tooltip:
+  //     "Natural Earth II, darkened for contrast.\nhttp://www.naturalearthdata.com/",
+  //   creationFunction: function() {
+  //     return new Cesium.TileMapServiceImageryProvider({
+  //       // url: Cesium.buildModuleUrl("Assets/Textures/NaturalEarthII")
+  //       url: "data/mapTiles/naturalEarthSmall"
+  //     });
+  //   }
+  // });
 
   let imageryProviderViewModels = [];
   // naturalEarth,
@@ -183,7 +183,7 @@ function main({
   //   satellite,
   //   street
   // };
-  let selectedImageryProviderViewModel = naturalEarth; //satellite; //WithLabels;
+  // let selectedImageryProviderViewModel = naturalEarth; //satellite; //WithLabels;
   let mapProjection = new Cesium.WebMercatorProjection(Cesium.Ellipsoid.WGS84);
 
   // mapProjection.MaximumLatitude = 89.9;
@@ -197,7 +197,7 @@ function main({
     navigationHelpButton: false,
     baseLayerPicker: true,
     imageryProviderViewModels,
-    selectedImageryProviderViewModel,
+    // selectedImageryProviderViewModel,
     terrainProviderViewModels: [],
     mapProjection,
     contextOptions: {
@@ -210,16 +210,91 @@ function main({
     // requestRenderMode: true
   });
 
+  //add settings
+  document
+    .getElementById("settingsToggle")
+    .addEventListener("click", toggleSettings);
+
+  function toggleSettings() {
+    let sc = document.getElementById("settingsContainer");
+    if (sc.classList.contains("slide-in")) {
+      sc.classList.add("slide-out");
+      sc.classList.remove("slide-in");
+      setTimeout(() => {
+        sc.style.display = "none";
+      }, 500);
+    } else {
+      sc.style.display = "block";
+      sc.classList.add("slide-in");
+      sc.classList.remove("slide-out");
+    }
+  }
+
   let layers = viewer.scene.imageryLayers;
   // let grid = layers.addImageryProvider(new Cesium.GridImageryProvider());
-  let naturalEarthDark = layers.addImageryProvider(
+  let naturalEarth = layers.addImageryProvider(
     new Cesium.TileMapServiceImageryProvider({
       // url: Cesium.buildModuleUrl("Assets/Textures/NaturalEarthII")
-      url: "data/mapTiles/naturalEarthDarkSmall"
+      url: "data/mapTiles/naturalEarthSmall"
     })
   );
 
-  naturalEarthDark.alpha = 0;
+  // naturalEarthDark.alpha = 0;
+
+  naturalEarth.brightness = 0.8;
+  naturalEarth.contrast = 1.55;
+  naturalEarth.saturation = 0.65;
+  naturalEarth.gamma = 0.5;
+  // The viewModel tracks the state of our mini application.
+  var viewModel = {
+    alpha: 0,
+    brightness: 0,
+    contrast: 0,
+    hue: 0,
+    saturation: 0,
+    gamma: 0
+  };
+  // Convert the viewModel members into knockout observables.
+  Cesium.knockout.track(viewModel);
+
+  // Bind the viewModel to the DOM elements of the UI that call for it.
+  var sc = document.getElementById("settingsContainer");
+  Cesium.knockout.applyBindings(viewModel, sc);
+
+  // Make the active imagery layer a subscriber of the viewModel.
+  function subscribeLayerParameter(name) {
+    Cesium.knockout
+      .getObservable(viewModel, name)
+      .subscribe(function(newValue) {
+        // if (imageryLayers.length > 0) {
+        //     var layer = imageryLayers.get(0);
+        naturalEarth[name] = newValue;
+        // }
+      });
+  }
+  subscribeLayerParameter("alpha");
+  subscribeLayerParameter("brightness");
+  subscribeLayerParameter("contrast");
+  subscribeLayerParameter("hue");
+  subscribeLayerParameter("saturation");
+  subscribeLayerParameter("gamma");
+
+  // Make the viewModel react to base layer changes.
+  function updateViewModel() {
+    // if (imageryLayers.length > 0) {
+    //     var layer = imageryLayers.get(0);
+    viewModel.alpha = naturalEarth.alpha;
+    viewModel.brightness = naturalEarth.brightness;
+    viewModel.contrast = naturalEarth.contrast;
+    viewModel.hue = naturalEarth.hue;
+    viewModel.saturation = naturalEarth.saturation;
+    viewModel.gamma = naturalEarth.gamma;
+    // }
+  }
+  layers.layerAdded.addEventListener(updateViewModel);
+  layers.layerRemoved.addEventListener(updateViewModel);
+  layers.layerMoved.addEventListener(updateViewModel);
+  updateViewModel();
 
   viewer.extend(Cesium.viewerDragDropMixin);
   if (endUserOptions.inspector) {
@@ -367,8 +442,17 @@ function main({
     }
   }
 
+  function getGameFromLocalStorage() {
+    var compressed = localStorage.getItem("prevGame");
+    console.log({ compressed });
+    var decompressed = LZString.decompress(compressed);
+    // let json = JSON.parse(decompressed);
+    // console.log(json);
+    return decompressed;
+  }
+
   function initializeGameOptions() {
-    let prevGame = localStorage.getItem("prevGame");
+    let prevGame = getGameFromLocalStorage();
     let confirm;
     if (prevGame) {
       confirm = window.confirm(
@@ -1110,7 +1194,10 @@ function main({
           showPrimitive(o.id);
         });
     });
-    naturalEarthDark.alpha = 0;
+    naturalEarth.brightness = 0.8;
+    naturalEarth.saturation = 0.65;
+    naturalEarth.gamma = 0.5;
+    updateViewModel();
   }
 
   function updateMap(ids) {
@@ -1248,17 +1335,34 @@ function main({
   let showContinents = true; //false;
 
   function initGame(names, prevGame) {
+    console.log({ prevGame });
     clearInterval(globeSpinInterval);
     let { humans, robots } = names;
     let gameLog = {
       log: [],
-      update(x) {
-        this.log.push(x);
+      update(x, multiple) {
         let gameLog = document.getElementById("gameLog");
-        let c = integerToRGB(x.player.color);
-        gameLog.innerHTML =
-          `<div><div style="border-color:${c};">${x.text}</div></div>` +
-          gameLog.innerHTML;
+        if (!multiple) {
+          this.log.push(x);
+          let { color, name } = x.player;
+          x.player = { name, color };
+          let c = integerToRGB(color);
+          gameLog.innerHTML =
+            `<div><div style="border-color:${c};">${x.text}</div></div>` +
+            gameLog.innerHTML;
+        } else {
+          this.log = [...this.log, ...x];
+          gameLog.innerHTML =
+            x
+              .reverse()
+              .map(y => {
+                let { color, name } = y.player;
+                y.player = { name, color };
+                let c = integerToRGB(color);
+                return `<div><div style="border-color:${c};">${y.text}</div></div>`;
+              })
+              .join("") + gameLog.innerHTML;
+        }
         // gameLog.scrollTo({
         //   top: [...gameLog.childNodes]
         //     .map(x => x.getBoundingClientRect().height)
@@ -1584,7 +1688,10 @@ function main({
       });
     }
 
-    if (prevGame) lineChartData = prevGame.lineChartData;
+    if (prevGame) {
+      lineChartData = prevGame.lineChartData;
+      gameLog.update(prevGame.gameLog, true);
+    }
     //game global variables
     let currentPlayersTurn,
       firstPlayer,
@@ -1847,19 +1954,22 @@ function main({
     }
 
     function saveGameInLocalStorage() {
-      localStorage.setItem(
-        "prevGame",
-        JSON.stringify({
-          players,
-          currentPlayersTurn,
-          firstPlayer,
-          playerGetsACard,
-          battleOccurred,
-          phase,
-          round,
-          lineChartData
-        })
-      );
+      let obj = {
+        players,
+        currentPlayersTurn,
+        firstPlayer,
+        playerGetsACard,
+        battleOccurred,
+        phase,
+        round,
+        lineChartData,
+        gameLog: gameLog.log
+      };
+      var string = JSON.stringify(obj);
+      // console.log("Size of sample is: " + string.length);
+      var compressed = LZString.compress(string);
+      // console.log("Size of compressed sample is: " + compressed.length);
+      localStorage.setItem("prevGame", compressed);
     }
 
     function updateSummary() {
@@ -1884,16 +1994,22 @@ function main({
         .join("")}</div>`;
       cont.innerHTML += getSortedPlayers()
         .map(p => {
+          let { name, color } = p;
+          let isCurrent = players[currentPlayersTurn].name === p.name;
           let playerDetails = `<div class="playerDetails" style="color:${integerToRGB(
-            p.color
+            color
           )};">`;
           let tColor = "white";
-          if (p.color[0] === 1 && p.color[1] === 1 && p.color[2] === 0)
+          if (color[0] === 1 && color[1] === 1 && color[2] === 0)
             tColor = "rgb(150,150,150)";
           playerDetails += `<div class="playerNames" style="color:${tColor};background:${integerToRGB(
-            p.color,
+            color,
             0.9
-          )};">${p.name}${p.isComputer ? ` (c-${p.algorithm})` : ""}</div>`;
+          )};display:grid;grid-template-columns:${
+            isCurrent ? "1fr 19fr" : "1fr"
+          }">${isCurrent ? "<div>>></div>" : ""}<div>${p.name}${
+            p.isComputer ? ` (c-${p.algorithm})` : ""
+          }</div></div>`;
           playerDetails += `<div>${calcTotalForces(p)}</div>`;
           let tL = p.territory.length,
             cL = countries.length;
@@ -3481,7 +3597,10 @@ function main({
       }
 
       if (!fastForward) {
-        naturalEarthDark.alpha = 1.0;
+        naturalEarth.brightness = 0.6;
+        naturalEarth.saturation = 0.4;
+        naturalEarth.gamma = 0.2;
+        updateViewModel();
         setBattleCountryColors({
           aggressor,
           defender

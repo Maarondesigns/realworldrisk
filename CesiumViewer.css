@@ -87,6 +87,38 @@ button.cesium-button.cesium-toolbar-button[data-bind="attr: { title: buttonToolt
   border-radius: 4px;
 }
 
+#settingsToggle {
+  position: absolute;
+  top: 35px;
+  right: 112px;
+}
+#settingsToggle img {
+  width: 100%;
+}
+#settingsOuterContainer {
+  z-index: 9;
+  background: rgba(0, 0, 0, 0.3);
+  color: white;
+  border: solid 1px rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  position: absolute;
+  top: 76px;
+  right: 35px;
+  background: rgba(0, 0, 0, 0.8);
+  width: fit-content;
+}
+#settingsContainer {
+  display: none;
+}
+#settingsContainer > div {
+  padding: 8px;
+}
+.settingsHeader {
+  text-align: center;
+  border-bottom: solid 1px;
+  background: rgba(255, 255, 255, 0.4);
+}
+
 #attackButtons {
   display: none;
   grid-template-columns: 1fr 1fr;

@@ -1009,6 +1009,11 @@ function main({
     return new Promise(res => res(true));
   }
 
+  function findCentroid(id) {
+    let c = countryData.find(x => x.id === id);
+    if (c) return [+c.centroidLat, +c.centroidLon];
+  }
+
   function addCountryLabels() {
     let winS = Math.min(window.innerWidth, window.innerHeight);
     countryLabels = new Cesium.CustomDataSource("countryLabels");
@@ -1033,7 +1038,7 @@ function main({
         show: false,
         name: c.id,
         module: "countryLabels",
-        centroid: [+c.centroidLat, +c.centroidLon],
+        centroid: findCentroid(c.id),
         position: Cesium.Cartesian3.fromDegrees(+c.centroidLat, +c.centroidLon),
         label: {
           text: `${getForces(c.id).toString()}`, //` (${c.id})`,
@@ -2414,6 +2419,32 @@ function main({
       }
     }
 
+    function showTroopChangeCount(id, count, symbol) {
+      let centroid = findCentroid(id);
+      if (centroid) {
+        let position = Cesium.Cartesian3.fromDegrees(centroid[0], centroid[1]);
+        let sp = Cesium.SceneTransforms.wgs84ToWindowCoordinates(
+          scene,
+          position
+        );
+        if (sp) {
+          let div = document.createElement("div");
+          div.classList.add("battleLostCount");
+          div.innerHTML = `${symbol}${count}`;
+          div.style.top = sp.y + "px";
+          div.style.left = sp.x + "px";
+          div.style.background = integerToRGB(getPlayerColor(id), 0.4);
+          document.body.appendChild(div);
+          setTimeout(() => {
+            div.classList.add("fadeAway");
+          }, 300);
+          setTimeout(() => {
+            div.remove();
+          }, 1600);
+        }
+      }
+    }
+
     function findShortestPath(a, b, player, exclude) {
       // return "This doesn't work. It's like O^n^n";
       // console.log(a, b, player);
@@ -3475,6 +3506,7 @@ function main({
         ).innerHTML = `${player.forcesToPlace} left`;
         updateMap([id]);
         updateSummary();
+        showTroopChangeCount(id, num, "+");
         setTimeout(() => {
           let text = `Placed ${num} troop${
             num > 1 ? "s" : ""
@@ -3737,10 +3769,12 @@ function main({
           if (aLostCount) {
             let el = document.getElementById("aLostCount");
             if (el) el.innerHTML = `-${aLostCount}`;
+            showTroopChangeCount(aggressor, aLostCount, "-");
           }
           if (dLostCount) {
             let el = document.getElementById("dLostCount");
             if (el) el.innerHTML = `-${dLostCount}`;
+            showTroopChangeCount(defender, dLostCount, "-");
           }
           setTimeout(
             () => {

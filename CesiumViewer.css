@@ -927,3 +927,24 @@ button:hover {
   fill: none;
   stroke: steelblue;
 }
+
+.battleLostCount {
+  position: absolute;
+  z-index: 9;
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+}
+.battleLostCount.fadeAway {
+  animation: fadeAway 1.3s forwards;
+}
+@keyframes fadeAway {
+  from {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translate(0px, -50px) scale(0.5);
+    opacity: 0;
+  }
+}

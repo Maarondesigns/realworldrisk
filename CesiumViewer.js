@@ -35,6 +35,14 @@ function main({
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI5ZGFjODY4OC04NjVlLTQ0MTEtYTEzYy1iZWI4ODdhZjM0OTciLCJpZCI6MTY3NTUsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1NzExNTI1MjN9.3rBWB6NySV4EUyawEX3k3WBPLCxg-ii3kyhKNWrzKPU";
 
   let lineChartData = { Total_Forces: [], Territory: [] };
+
+  let tooSmall = countryData.filter(x => x.Area_mi2 < 5000 && x.id !== "XK");
+  tooSmall
+    .sort((a, b) => a.Area_mi2 - b.Area_mi2)
+    .forEach(x => {
+      console.log(x.country, x.Area_mi2);
+    });
+  tooSmall = tooSmall.map(x => x.id);
   /*
      Options parsed from query string:
        source=url          The URL of a CZML/GeoJSON/KML data source to load at startup.
@@ -60,133 +68,23 @@ function main({
   //   sourceType: "kml"
   // };
   var endUserOptions = {
-    source: "data/world-NE-10m-1p5.json",
+    source: "data/world_110m.geo.json", //"data/world-NE-10m-1p5.json",
     sourceType: "geojson"
   };
 
-  // var imageryProvider;
-  // if (defined(endUserOptions.tmsImageryUrl)) {
-  //   imageryProvider = new TileMapServiceImageryProvider({
-  //     url: endUserOptions.tmsImageryUrl
-  //   });
-  // }
+  let d3LoadPromise = d3.json(endUserOptions.source).then(data => {
+    data.features.forEach(f => {
+      f.id = getIDForGeoJSON(f);
+    });
+    return data;
+  });
 
   var loadingIndicator = document.getElementById("loadingIndicator");
-  // var viewer;
-  // let naturalEarth = new ProviderViewModel({
-  //   name: "Natural Earth",
-  //   iconUrl: buildModuleUrl(
-  //     "Widgets/Images/ImageryProviders/naturalEarthII.png"
-  //   ),
-  //   tooltip:
-  //     "Natural Earth II, darkened for contrast.\nhttp://www.naturalearthdata.com/",
-  //   creationFunction: function() {
-  //     return new TileMapServiceImageryProvider({
-  //       // url: Cesium.buildModuleUrl("Assets/Textures/NaturalEarthII")
-  //       url: "data/mapTiles/naturalEarth3"
-  //     });
-  //   }
-  // });
-  // let selectedImageryProviderViewModel = naturalEarth;
-  // try {
-  //   // var hasBaseLayerPicker = !defined(imageryProvider);
-  //   viewer = new Viewer("cesiumContainer", {
-  //     imageryProvider: imageryProvider,
-  //     baseLayerPicker: true,
-  //     sceneModePicker: false,
-  //     timeline: false,
-  //     selectionIndicator: false,
-  //     selectedImageryProviderViewModel,
-  //     scene3DOnly: endUserOptions.scene3DOnly,
-  //     requestRenderMode: true
-  //   });
-
-  //   // if (hasBaseLayerPicker) {
-  //   //   var viewModel = viewer.baseLayerPicker.viewModel;
-  //   //   viewModel.selectedTerrain = viewModel.terrainProviderViewModels[1];
-  //   // } else {
-  //   //   viewer.terrainProvider = createWorldTerrain({
-  //   //     requestWaterMask: true,
-  //   //     requestVertexNormals: true
-  //   //   });
-  //   // }
-  // } catch (exception) {
-  //   loadingIndicator.style.display = "none";
-  //   var message = formatError(exception);
-  //   console.error(message);
-  //   if (!document.querySelector(".cesium-widget-errorPanel")) {
-  //     window.alert(message); //eslint-disable-line no-alert
-  //   }
-  //   return;
-  // }
-
-  // let satelliteWithLabels = new Cesium.ProviderViewModel({
-  //   name: "Satelite Labels",
-  //   iconUrl: "./img/mapicons/satellite_with_labels.jpg",
-  //   tooltip: "some tooltip text (optional)",
-  //   creationFunction: function() {
-  //     return new Cesium.BingMapsImageryProvider({
-  //       url: "https://dev.virtualearth.net",
-  //       key: "AvYm4h6TlEkjjh583Rgih5zqyjSgUFfRq9JTL8Hojhy2oxGY6-sW6pXl8VBMEQld",
-  //       mapStyle: Cesium.BingMapsStyle.AERIAL_WITH_LABELS_ON_DEMAND
-  //     });
-  //   }
-  // });
-  // let satellite = new Cesium.ProviderViewModel({
-  //   name: "Satelite",
-  //   iconUrl: "./img/mapicons/satellite.jpg",
-  //   tooltip: "some tooltip text (optional)",
-  //   creationFunction: function() {
-  //     return new Cesium.BingMapsImageryProvider({
-  //       url: "https://dev.virtualearth.net",
-  //       key: "AvYm4h6TlEkjjh583Rgih5zqyjSgUFfRq9JTL8Hojhy2oxGY6-sW6pXl8VBMEQld",
-  //       mapStyle: Cesium.BingMapsStyle.AERIAL
-  //     });
-  //   }
-  // });
-  // let street = new Cesium.ProviderViewModel({
-  //   name: "Streets Labels",
-  //   iconUrl: "./img/mapicons/streets.jpg",
-  //   tooltip: "some tooltip text (optional)",
-  //   creationFunction: function() {
-  //     return new Cesium.BingMapsImageryProvider({
-  //       url: "https://dev.virtualearth.net",
-  //       key: "AvYm4h6TlEkjjh583Rgih5zqyjSgUFfRq9JTL8Hojhy2oxGY6-sW6pXl8VBMEQld",
-  //       mapStyle: Cesium.BingMapsStyle.ROAD_ON_DEMAND
-  //     });
-  //   }
-  // });
-  // let naturalEarth = new Cesium.ProviderViewModel({
-  //   name: "Natural Earth",
-  //   iconUrl: Cesium.buildModuleUrl(
-  //     "Widgets/Images/ImageryProviders/naturalEarthII.png"
-  //   ),
-  //   tooltip:
-  //     "Natural Earth II, darkened for contrast.\nhttp://www.naturalearthdata.com/",
-  //   creationFunction: function() {
-  //     return new Cesium.TileMapServiceImageryProvider({
-  //       // url: Cesium.buildModuleUrl("Assets/Textures/NaturalEarthII")
-  //       url: "data/mapTiles/naturalEarthSmall"
-  //     });
-  //   }
-  // });
 
   let imageryProviderViewModels = [];
-  // naturalEarth,
-  //   satelliteWithLabels,
-  //   satellite,
-  //   street
-  // ];
-  // this.imageryModels = {
-  //   naturalEarth,
-  //   satelliteWithLabels,
-  //   satellite,
-  //   street
-  // };
-  // let selectedImageryProviderViewModel = naturalEarth; //satellite; //WithLabels;
+
   let mapProjection = new Cesium.WebMercatorProjection(Cesium.Ellipsoid.WGS84);
 
-  // mapProjection.MaximumLatitude = 89.9;
   let viewer = new Cesium.Viewer("cesiumContainer", {
     // scene3DOnly: true,
     selectionIndicator: false,
@@ -316,7 +214,7 @@ function main({
   var scene = viewer.scene;
   let troopFactor = 1;
   let gameIsOver = false;
-  let globeSpinInterval;
+  let spinGlobeInterval;
   var context = scene.context;
   if (endUserOptions.debug) {
     context.validateShaderProgram = true;
@@ -351,38 +249,35 @@ function main({
       }
     }
 
-    var loadPromise, loadPromise2;
-    if (sourceType === "czml") {
-      loadPromise = Cesium.CzmlDataSource.load(source);
-    } else if (sourceType === "geojson") {
-      // loadPromise = Cesium.GeoJsonDataSource.load(countryGeometries, options);
-      loadPromise = Cesium.GeoJsonDataSource.load(source, options);
-      // loadPromise2 = Cesium.GeoJsonDataSource.load(source, options);
-    } else if (sourceType === "kml") {
-      loadPromise = Cesium.KmlDataSource.load(source, {
-        camera: scene.camera,
-        canvas: scene.canvas
-      });
-    } else {
-      showLoadError(source, "Unknown format.");
-    }
+    // var loadPromise, loadPromise2;
+    // if (sourceType === "czml") {
+    //   loadPromise = Cesium.CzmlDataSource.load(source);
+    // } else if (sourceType === "geojson") {
+    //   // loadPromise = Cesium.GeoJsonDataSource.load(countryGeometries, options);
+    //   loadPromise = Cesium.GeoJsonDataSource.load(source, options);
+    //   // loadPromise2 = Cesium.GeoJsonDataSource.load(source, options);
+    // } else if (sourceType === "kml") {
+    //   loadPromise = Cesium.KmlDataSource.load(source, {
+    //     camera: scene.camera,
+    //     canvas: scene.canvas
+    //   });
+    // } else {
+    //   showLoadError(source, "Unknown format.");
+    // }
+    let loadPromise = Cesium.when(d3LoadPromise, function(data) {
+      console.log(data);
+      return Cesium.GeoJsonDataSource.load(data);
+    });
 
     if (Cesium.defined(loadPromise)) {
+      let antarcticaEntities = [];
       loadPromise
         .then(function(dataSource) {
-          let tooSmall = countryData.filter(
-            x => x.Area_mi2 < 5000 && x.id !== "XK"
-          );
-          tooSmall
-            .sort((a, b) => a.Area_mi2 - b.Area_mi2)
-            .forEach(x => {
-              console.log(x.country, x.Area_mi2);
-            });
-          tooSmall = tooSmall.map(x => x.id);
           let entities = dataSource.entities.values;
           countries = [];
           entities.forEach(e => {
             let id = e.id.split("_")[0];
+            if (id === "ATA") antarcticaEntities.push(e);
             let country = countryData.find(co => co.id === id);
             if (
               country &&
@@ -407,14 +302,27 @@ function main({
               countryCoords = [...countryCoords, ...objs];
               // let color = [Math.random(), Math.random(), Math.random()];
               objs.forEach(o => {
-                removePrimitive(o.id).then(() => {
-                  createPrimitive({
-                    cartesian: o.coords,
-                    id: o.id,
-                    fillOpacity: 0.3,
-                    fillColor: [1, 1, 1]
-                    // strokeColor: color
-                  });
+                // removePrimitive(o.id).then(() => {
+                //   createPrimitive({
+                //     cartesian: o.coords,
+                //     id: o.id,
+                //     fillOpacity: 0.3,
+                //     fillColor: [1, 1, 1],
+                //     dontShow: true
+                //     // strokeColor: color
+                //   });
+                // });
+                let continent = continents.find(
+                  y => y.Countries.indexOf(o.id.split("_")[0]) !== -1
+                );
+                createPrimitive({
+                  cartesian: o.coords,
+                  id: o.id + "_continent",
+                  fillColor: continent.Color,
+                  strokeColor: continent.Color, //[1, 1, 1],
+                  fillOpacity: 0.5,
+                  strokeOpacity: 0.8 //,
+                  // dontShow: true
                 });
               });
             }
@@ -427,10 +335,10 @@ function main({
         })
         .then(function() {
           loadingIndicator.style.display = "none";
-          globeSpinInterval = setInterval(() => {
-            spinGlobe(0.01);
-          }, 40);
-          addContinentBorders().then(() => {
+          spinGlobeInterval = setInterval(() => {
+            spinGlobe(0.001);
+          }, 15);
+          addContinentBorders(antarcticaEntities).then(() => {
             drawCanAttackPaths();
             initializeGameOptions();
           });
@@ -440,6 +348,27 @@ function main({
         });
       // });
     }
+  }
+
+  function getIDForGeoJSON(e) {
+    let {
+      name,
+      adm0_a3_us,
+      adm0_a3_is,
+      iso_a3,
+      type,
+      sovereignt
+    } = e.properties;
+    let country = countryData.find(
+      x => x.country.split("(")[0].trim() === name
+    );
+    if (!country) {
+      country = countryData.find(x => x.id === adm0_a3_us);
+      if (!country) {
+        country = countryData.find(x => x.id === iso_a3);
+      }
+    }
+    return country ? country.id : iso_a3;
   }
 
   function getGameFromLocalStorage() {
@@ -465,7 +394,8 @@ function main({
       fetchAutoGenNames().then(names => {
         let humans = ["Player 1"],
           numOfRobots = 4,
-          robots = names.slice(0, numOfRobots);
+          robots = names.slice(0, numOfRobots),
+          options = { eyeForAnEye: false };
         function updateRobots() {
           let robotsContainer = document.querySelector("#startGame #robots");
           robotsContainer.innerHTML = robots
@@ -522,7 +452,7 @@ function main({
         startGame.style.display = "block";
         let startGameButton = document.getElementById("startGameButton");
         startGameButton.addEventListener("click", function() {
-          initGame({ humans, robots });
+          initGame({ humans, robots }, undefined, options);
         });
       });
     }
@@ -545,144 +475,93 @@ function main({
       });
   }
 
-  function addContinentBorders() {
-    console.log("creating continents");
+  function addContinentBorders(antarcticaEntities) {
     return d3.json("data/continentGeometries_110m.json").then(geo => {
-      console.log(geo);
       Cesium.GeoJsonDataSource.load(geo).then(function(dataSource) {
         let borderGroups = [];
-        dataSource.entities.values.forEach(e => {
+        let ent = dataSource.entities.values;
+        antarcticaEntities.forEach(e => {
+          e.properties = new Cesium.PropertyBag({ continent: "ANTARCTICA" });
+        });
+        ent = [...ent, ...antarcticaEntities];
+        ent.forEach(e => {
           let c = continents.find(
             x =>
               x.Name.toLowerCase() ===
               e.properties.continent.getValue().toLowerCase()
           );
-          // console.log({ e, c });
           if (c) {
             let { Name, Color } = c;
-            // let bg = borderGroups.find(x => x.Name === Name && x.Color === Color);
-            // console.log(c, Name, Color, bg);
-            // if (bg) bg.Border = [...bg.Border, ...e.polygon.hierarchy._value];
-            // else
+            if (!c.Borders) c.Borders = [];
+            let Border = e.polygon.hierarchy._value.positions;
+            c.Borders.push(Border);
             borderGroups.push({
               Name,
               Color,
-              Border: e.polygon.hierarchy._value.positions
+              Border
             });
-            // console.log(borderGroups);
           } else {
             // console.log(e.properties.CONTINENT.getValue().toLowerCase());
           }
-          // addContinentBorder(obj);
-          // console.log(c, e);
-          // e.polygon.material = new Cesium.Color(
-          //   c.Color[0],
-          //   c.Color[1],
-          //   c.Color[2]
-          // ).withAlpha(0.7);
-          // e.polygon.outlineColor = new Cesium.Color(
-          //   c.Color[0],
-          //   c.Color[1],
-          //   c.Color[2]
-          // );
-          // e.polygon.show=true;
-          // viewer.entities.add(e)
         });
-        // console.log(borderGroups);
-        // timeout += borderGroups.length * 10;
         borderGroups.forEach((x, i) => {
-          // console.log(x, i);
-          // setTimeout(() => {
-          // spinGlobe(0.01);
-          // if (Border.length > 1)
           addContinentBorder(x, i);
-          // }, 10 * i);
         });
       });
     });
-    function addContinentBorder(c, i) {
-      // console.log(c, i);
-      var corridorPrimitive = new Cesium.Primitive({
-        show: true, //false,
-        releaseGeometryInstances: false,
-        geometryInstances: new Cesium.GeometryInstance({
-          id: `${c.Name}_${i}`,
-          geometry: Cesium.CorridorGeometry.createGeometry(
-            new Cesium.CorridorGeometry({
-              positions: c.Border,
-              width: 30000,
-              extrudedHeight: 20000
-            })
-          )
-        }),
-        appearance: new Cesium.MaterialAppearance({
-          material: new Cesium.Material.fromType("Color", {
-            color: new Cesium.Color(c.Color[0], c.Color[1], c.Color[2])
-          })
-        }),
-        asynchronous: false
-      });
-      // console.log(corridorPrimitive);
-      viewer.scene.primitives.add(corridorPrimitive);
-    }
+  }
 
-    // let timeout = 0;
-    // countryCoords.forEach(x => {
-    //   let cont = continents.find(
-    //     y => y.Countries.indexOf(x.id.split("_")[0]) !== -1
-    //   );
-    //   if (cont) {
-    //     let { Name, Color } = cont;
-    //     let borderGroups = [],
-    //       index = 0;
-    //     let coords = x.coords.positions;
-    //     coords.forEach((c, i) => {
-    //       let isInterior = co => {
-    //         return countryCoords.some(y => {
-    //           let continent = continents.find(
-    //             z => z.Countries.indexOf(y.id.split("_")[0]) !== -1
-    //           );
-    //           // if(!continent) console.log(y.id)
-    //           return (
-    //             continent &&
-    //             continent.Name === cont.Name &&
-    //             y.id !== x.id &&
-    //             y.coords.positions.some(z => z.x === co.x && z.y === co.y)
-    //           );
-    //         });
-    //       };
-    //       if (
-    //         !borderGroups[index] &&
-    //         coords[i + 1] &&
-    //         !isInterior(coords[i + 1])
-    //       ) {
-    //         borderGroups[index] = [c];
-    //       } else if (borderGroups[index]) {
-    //         if (!isInterior(c)) borderGroups[index].push(c);
-    //         else if (
-    //           isInterior(c) &&
-    //           coords[i - 1] &&
-    //           !isInterior(coords[i - 1])
-    //         ) {
-    //           borderGroups[index].push(c);
-    //           index += 1;
-    //         }
-    //       }
-    //     });
-    // timeout += borderGroups.length * 10;
-    // borderGroups.forEach((Border, i) => {
-    //   setTimeout(() => {
-    //     // spinGlobe(0.01);
-    //     if (Border.length > 1) addContinentBorder({ Name, Color, Border });
-    //   }, 10 * i);
-    // });
-    //   }
-    // });
-    // return new Promise(res => {
-    //   setTimeout(() => {
-    //     res();
-    //   }, timeout);
-    // });
+  function addContinentBorder(c, i) {
+    var corridorPrimitive = new Cesium.Primitive({
+      show: true, //false,
+      releaseGeometryInstances: false,
+      geometryInstances: new Cesium.GeometryInstance({
+        id: `${c.Name}_${i}`,
+        geometry: Cesium.CorridorGeometry.createGeometry(
+          new Cesium.CorridorGeometry({
+            positions: c.Border,
+            width: 30000,
+            extrudedHeight: 20000
+          })
+        )
+      }),
+      appearance: new Cesium.MaterialAppearance({
+        material: new Cesium.Material.fromType("Color", {
+          color: new Cesium.Color(c.Color[0], c.Color[1], c.Color[2])
+        })
+      }),
+      asynchronous: false
+    });
+    // console.log(corridorPrimitive);
+    viewer.scene.primitives.add(corridorPrimitive);
+  }
+
+  function changeContinentBorderColor(cont, Color, duration) {
+    let { Name } = cont;
+    let filter = viewer.scene.primitives._primitives.filter(p => {
+      if (p._instanceIds && p._instanceIds[0]) {
+        let id = p._instanceIds[0];
+        let s = id.split("_"),
+          n = s[0];
+        return n === Name;
+      }
+    });
+    let l = filter.length;
+    filter.forEach(p => {
+      let id = p._instanceIds[0];
+      removePrimitive(id).then(() => {
+        l -= 1;
+      });
+    });
+
+    let interval = setInterval(() => {
+      if (l < 1) {
+        clearInterval(interval);
+        cont.Borders.forEach((b, i) => {
+          addContinentBorder({ Name, Color, Border: b }, i);
+        });
+      }
+    }, 10);
   }
 
   let canAttackPaths = [];
@@ -698,18 +577,18 @@ function main({
           canAttackPaths.push(ft);
       });
     });
-    canAttackPaths.forEach(x => {
-      spinGlobe(0.02);
-      drawPath(
-        x,
-        {
-          id: `from-${x[0]}_to-${x[1]}`,
-          width: 1,
-          color: Cesium.Color.WHITE //new Cesium.Color(0.2, 0.2, 0.2)
-        },
-        true,
-        { color: [1, 1, 1], outlineColor: [0, 0, 0] }
-      );
+    canAttackPaths.forEach((x, i) => {
+        spinGlobe(0.02);
+        drawPath(
+          x,
+          {
+            id: `from-${x[0]}_to-${x[1]}`,
+            width: 1,
+            color: Cesium.Color.WHITE //new Cesium.Color(0.2, 0.2, 0.2)
+          },
+          true,
+          { color: [1, 1, 1], outlineColor: [0, 0, 0] }
+        );
     });
   }
 
@@ -725,7 +604,7 @@ function main({
           .filter(y => y.id.split("_")[0] === x)
           .reduce((a, b) => [...a, ...b.coords.positions], []);
         let response = xCoords.some(y =>
-          coords.some(z => z.x === y.x && z.y === y.y)
+          coords.some(z => Math.round(z.x) === Math.round(y.x) && Math.round(z.y) === Math.round(y.y))
         );
         return response;
       });
@@ -891,11 +770,17 @@ function main({
         return p._instanceIds[0] === id + "_corridor_hole";
       }
     });
+    let exact = primitives._primitives.find(p => {
+      if (p._instanceIds && p._instanceIds[0]) {
+        return p._instanceIds[0] === id;
+      }
+    });
 
     return {
       existingPolygon,
       existingCorridor,
-      existingHoles
+      existingHoles,
+      exact
     };
   }
 
@@ -904,12 +789,15 @@ function main({
     let {
       existingPolygon,
       existingCorridor,
-      existingHoles
+      existingHoles,
+      exact
     } = getExistingPrimitive(id);
 
     if (existingPolygon) primitives.remove(existingPolygon);
     if (existingCorridor) primitives.remove(existingCorridor);
     if (existingHoles.length) existingHoles.forEach(h => primitives.remove(h));
+    if (exact) primitives.remove(exact);
+
     return new Promise(res => {
       res(true);
     });
@@ -925,7 +813,7 @@ function main({
     strokeOpacity = 1.0,
     dontShow
   }) {
-    // if (showContinents) dontShow = true;
+    if (showContinents) dontShow = true;
 
     var primitives = viewer.scene.primitives;
 
@@ -1015,45 +903,94 @@ function main({
   }
 
   function addCountryLabels() {
-    let winS = Math.min(window.innerWidth, window.innerHeight);
     countryLabels = new Cesium.CustomDataSource("countryLabels");
     viewer.dataSources.add(countryLabels);
     countryData.forEach(c => {
-      let fontSizes = ["20px", "18px", "16px", "14px", "12px"];
-      let areas = [2000000, 1000000, 200000, 50000, 0];
-      let i = areas.findIndex(a => c.Area_mi2 > a);
-      // let fS = fontSizes[i];
-      let tBD = [18337, 25505];
-      // if (c.labelClusterCat) tBD = [2500, 4660];
-      // else if (i === 4) tBD = [6810, 7885];
-      // console.log(c.country, winS, tBD.map(x => x / winS));
-      let translucencyByDistance = new Cesium.NearFarScalar(
-        tBD[0] * winS,
-        1.0,
-        tBD[1] * winS,
-        0.0
-      );
-      countryLabels.entities.add({
-        id: c.id + "_label",
-        show: false,
-        name: c.id,
-        module: "countryLabels",
-        centroid: findCentroid(c.id),
-        position: Cesium.Cartesian3.fromDegrees(+c.centroidLat, +c.centroidLon),
-        label: {
-          text: `${getForces(c.id).toString()}`, //` (${c.id})`,
-          // translucencyByDistance,
-          font: `bold 16px Helvetica`,
-          fillColor: Cesium.Color.WHITE,
-          showBackground: true,
-          backgroundPadding: new Cesium.Cartesian2(5, 4),
-          outlineColor: Cesium.Color.BLACK,
-          outlineWidth: 2,
-          style: Cesium.LabelStyle.FILL_AND_OUTLINE //,
-          // eyeOffset: new Cesium.Cartesian3(0, 0, -2000000)
-        }
-      });
+      let { id } = c;
+      if (tooSmall.indexOf(id) === -1)
+        countryLabels.entities.add({
+          id: id + "_label",
+          show: false,
+          name: id,
+          module: "countryLabels",
+          centroid: findCentroid(id),
+          position: Cesium.Cartesian3.fromDegrees(
+            +c.centroidLat,
+            +c.centroidLon
+          ),
+          billboard: {
+            image: generateBillboardLabel(id),
+            eyeOffset: new Cesium.Cartesian3(0, 0, -1000000),
+            horizontalOrigin: Cesium.HorizontalOrigin.CENTER
+          }
+          // label: {
+          //   text: `${getForces(c.id).toString()}`,
+          //   font: `bold 16px Helvetica`,
+          //   fillColor: Cesium.Color.WHITE,
+          //   showBackground: true,
+          //   backgroundPadding: new Cesium.Cartesian2(5, 4),
+          //   outlineColor: Cesium.Color.BLACK,
+          //   outlineWidth: 2,
+          //   style: Cesium.LabelStyle.FILL_AND_OUTLINE
+          // }
+        });
     });
+  }
+
+  function generateBillboardLabel(id) {
+    let text = `${getForces(id).toString()}`;
+    //create divs to get height and width then remove them
+    let font = `bold 16px Helvetica`;
+    var canvas = document.createElement("canvas");
+    let textDiv = document.createElement("div");
+    textDiv.style.position = "absolute";
+    textDiv.style.font = font;
+    textDiv.style.padding = "2px 5px";
+    textDiv.innerHTML = text;
+    document.body.appendChild(textDiv);
+    let { height, width } = textDiv.getBoundingClientRect();
+    document.body.removeChild(textDiv);
+    let margin = 10;
+    canvas.height = height + margin * 3;
+    canvas.width = width + margin * 2;
+    //create font in canvas element
+    let ctx = canvas.getContext("2d");
+    ctx.font = font;
+    drawBillboardBackground({ height, width, ctx, margin, id });
+    ctx.textAlign = "center";
+    ctx.fillStyle = "white";
+    ctx.strokeStyle = "black";
+    ctx.shadowBlur = 0;
+    ctx.lineWidth = 2;
+    ctx.strokeText(text, width / 2 + margin, height + margin / 2);
+    ctx.fillText(text, width / 2 + margin, height + margin / 2);
+
+    return canvas;
+  }
+
+  function drawBillboardBackground({ height, width, ctx, margin, id }) {
+    let x = width / 2 + margin,
+      y = height,
+      r = width / 2 + 1,
+      sa = 0,
+      ea = 2 * Math.PI;
+    let c = getPlayerColor(id);
+    if (!c) c = [1, 1, 1];
+    ctx.beginPath();
+    ctx.arc(x, y + 3, r, sa, ea);
+    ctx.fillStyle = integerToRGB([c[0] - 0.1, c[1] - 0.1, c[2] - 0.1]);
+    ctx.lineWidth = 1;
+    ctx.shadowColor = "rgb(255,255,255)";
+    ctx.shadowBlur = margin;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x, y, r, sa, ea);
+    ctx.fillStyle = integerToRGB(c);
+    ctx.strokeStyle = "rgba(0,0,0,0.6)";
+    ctx.shadowBlur = 0;
+    ctx.stroke();
+    ctx.fill();
   }
 
   let players;
@@ -1082,6 +1019,12 @@ function main({
         ca = ca.filter(x => !player.territory.find(y => y.name === x));
     }
     return ca;
+  }
+
+  function integerToRGB(colorArray = [1, 1, 1], opacity = 1) {
+    return `rgba(${colorArray
+      .map(c => Math.round(c * 255))
+      .toString()}, ${opacity})`;
   }
 
   function getPlayerColor(id) {
@@ -1155,25 +1098,26 @@ function main({
               x => x.Countries.indexOf(o.id.split("_")[0]) !== -1
             );
             if (!continent) console.log(o.id);
-            else
-              createPrimitive({
-                cartesian: o.coords,
-                id: o.id + "_continent",
-                fillColor: continent.Color,
-                strokeColor: [1, 1, 1],
-                fillOpacity: 0.4,
-                strokeOpacity: 0.3,
-                dontShow: true
-              });
+            // else
+            //   createPrimitive({
+            //     cartesian: o.coords,
+            //     id: o.id + "_continent",
+            //     fillColor: continent.Color,
+            //     strokeColor: [1, 1, 1],
+            //     fillOpacity: 0.4,
+            //     strokeOpacity: 0.3,
+            //     dontShow: true
+            //   });
             //labels
             let l = countryLabels.entities.values.find(l => l.name === c);
-            l.label.text = `${getForces(l.name).toString()}`; //` (${l.name})`;
-            l.label.backgroundColor = new Cesium.Color(
-              color[0],
-              color[1],
-              color[2],
-              1
-            );
+            l.billboard.image = generateBillboardLabel(l.name);
+            // l.label.text = `${getForces(l.name).toString()}`; //` (${l.name})`;
+            // l.label.backgroundColor = new Cesium.Color(
+            //   color[0],
+            //   color[1],
+            //   color[2],
+            //   1
+            // );
             l.position = Cesium.Cartesian3.fromDegrees(
               l.centroid[0],
               l.centroid[1],
@@ -1215,14 +1159,15 @@ function main({
       filteredCountries = filteredCountries.filter(c => ids.indexOf(c) !== -1);
     }
     filteredLabels.forEach(l => {
-      l.label.text = `${getForces(l.name).toString()}`; //` (${l.name})`;
-      let c = getPlayerColor(l.name);
-      if (c) l.label.backgroundColor = new Cesium.Color(c[0], c[1], c[2], 1);
-      l.position = Cesium.Cartesian3.fromDegrees(
-        l.centroid[0],
-        l.centroid[1],
-        getHeight(l.name) + 20000
-      );
+      // l.label.text = `${getForces(l.name).toString()}`; //` (${l.name})`;
+      // let c = getPlayerColor(l.name);
+      // if (c) l.label.backgroundColor = new Cesium.Color(c[0], c[1], c[2], 1);
+      (l.billboard.image = generateBillboardLabel(l.name)),
+        (l.position = Cesium.Cartesian3.fromDegrees(
+          l.centroid[0],
+          l.centroid[1],
+          getHeight(l.name) + 20000
+        ));
     });
 
     let finished = [],
@@ -1297,7 +1242,7 @@ function main({
           let offset = new Cesium.HeadingPitchRange(
             2 * Math.PI,
             -0.785,
-            radius * 2
+            radius * 4
           );
           scene.camera.lookAt(center, offset);
           scene.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
@@ -1337,11 +1282,12 @@ function main({
     userManuallyMoved = false;
   });
 
-  let showContinents = true; //false;
+  let showContinents = false;
 
-  function initGame(names, prevGame) {
-    console.log({ prevGame });
-    clearInterval(globeSpinInterval);
+  function initGame(names, prevGame, options) {
+    if (prevGame) options = prevGame.options;
+    toggleContinents();
+    clearInterval(spinGlobeInterval);
     let { humans, robots } = names;
     let gameLog = {
       log: [],
@@ -1769,12 +1715,9 @@ function main({
     promise.then(() => {
       playersInitialized = true;
       addCountryLabels();
-      // addContinentBorders().then(() => {
-      //   drawCanAttackPaths();
       setTimeout(() => {
         toggleContinents();
         initGameMap().then(() => {
-          // console.log("starting game");
           setCardTradeInHandler();
           setContinentsToggleHandler();
           setGameLogToggleHandler();
@@ -1800,7 +1743,6 @@ function main({
           }, 4000);
         });
       }, 500);
-      // });
     });
 
     function showGameStuff() {
@@ -1826,6 +1768,8 @@ function main({
       if (showContinents) {
         showContinents = false;
         continents.forEach(cont => {
+          let p = players.find(p => p.continents.indexOf(cont.Name) !== -1);
+          changeContinentBorderColor(cont, p ? p.color : [0, 0, 0]);
           hidePrimitive(cont.Name);
           cont.Countries.forEach(c => {
             let filter = countryCoords.filter(x => x.id.split("_")[0] === c);
@@ -1838,6 +1782,7 @@ function main({
       } else {
         showContinents = true;
         continents.forEach(cont => {
+          changeContinentBorderColor(cont, cont.Color);
           showPrimitive(cont.Name, true);
           cont.Countries.forEach(c => {
             let filter = countryCoords.filter(x => x.id.split("_")[0] === c);
@@ -1923,12 +1868,6 @@ function main({
             return a + b;
           }, 0) + p.forcesToPlace
       );
-    }
-
-    function integerToRGB(colorArray, opacity = 1) {
-      return `rgba(${colorArray
-        .map(c => Math.round(c * 255))
-        .toString()}, ${opacity})`;
     }
 
     let playerSortMethod = "Players";
@@ -3957,6 +3896,14 @@ function main({
           x => getPlayerContinentsFromTerritory(loser).indexOf(x) === -1
         );
         let ps = [new Promise(res => res(true))];
+        if (lost) {
+          ps.push(showAlert(`${loser.name} no longer controls ${lost}`, loser));
+          loser.continents = loser.continents.filter(x => x !== lost);
+          changeContinentBorderColor(
+            continents.find(x => x.Name === lost),
+            [0, 0, 0]
+          );
+        }
         if (won) {
           ps.push(
             showAlert(`${winner.name} now controls all of ${won}`, winner)
@@ -3964,10 +3911,16 @@ function main({
           winner.continents.push(won);
           if (!continentsFirstControlledBy[won])
             continentsFirstControlledBy[won] = winner;
-        }
-        if (lost) {
-          ps.push(showAlert(`${loser.name} no longer controls ${lost}`, loser));
-          loser.continents = loser.continents.filter(x => x !== lost);
+          changeContinentBorderColor(
+            continents.find(x => x.Name === won),
+            [1, 1, 1]
+          );
+          setTimeout(() => {
+            changeContinentBorderColor(
+              continents.find(x => x.Name === won),
+              winner.color
+            );
+          }, 3000);
         }
         updateSummary();
         Promise.all(ps).then(() => {
@@ -4207,9 +4160,9 @@ function main({
       viewer.scene.camera.flyHome(1);
       fastForward = 0;
       resetCountryTransparencies();
-      globeSpinInterval = setInterval(() => {
-        spinGlobe(0.01);
-      }, 40);
+      spinGlobeInterval = setInterval(() => {
+        spinGlobe(0.001);
+      }, 15);
 
       let text = `<div>${winner.name}(${winner.algorithm}) has won the game in ${round} rounds.</div>`;
       playersDefeatedBy.forEach(x => {

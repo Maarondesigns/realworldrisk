@@ -11,6 +11,9 @@ Changes/Features:
 - set home position or home fly to continent, or country with most forces
 - attack dice number / move troops number (max dice 3, move troops min = dice num)
 - animate continent border when new player controls it
+- split russia into west and east
+- show player killed animation
+- do something when player is killed (spectate remainder of game or start new one?)
 
 Better AI:
 
